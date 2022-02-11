@@ -112,10 +112,12 @@ def main():
     base_name = 'cheese_or_not'
     width = 100
 
+    print("Cheesing...")
     if len(argv) == 2:
         if argv[1] == 'init':
             data_path = os.path.join("data")
             include = {'Cheese', 'NotCheese'}
+            print("Reading and resizing all the data images")
             resize_all(src=data_path, pklname=base_name, width=width, include=include)
         else:
             print('Usage: cheeser.py [init]')
