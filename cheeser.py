@@ -110,7 +110,8 @@ def plot_confusion_matrix(cmx, vmax1=None, vmax2=None, vmax3=None):
     fig.colorbar(im2, cax=cax2)
     fig.colorbar(im3, cax=cax3)
     fig.tight_layout()
-    plt.show()
+    # Uncomment plt.show() to have program wait until confusion matrix and data examples are closed
+    #plt.show()
 
 def main():
     # Base name of .pkl file
@@ -205,6 +206,7 @@ def main():
     X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=0.9, names=names)
 
     # Set up the HOG pipeline for optimized search
+    print("Creating the HOG pipeline to optimze search")
     HOG_pipeline = Pipeline([
         # Transformers
         ('grayify', RGB2GrayTransformer()),
@@ -237,6 +239,7 @@ def main():
     ]
 
     # Create a grid search with the HOG pipeline
+    print("Creating Grid Search framework")
     grid_search = GridSearchCV(HOG_pipeline, 
                            param_grid, 
                            cv=3,
@@ -246,6 +249,7 @@ def main():
                            return_train_score=True)
  
     # Train the grid search to find the best descriptors
+    print("Training the grid search")
     grid_res = grid_search.fit(X_train, y_train)
 
     # save the model to disk
@@ -254,6 +258,7 @@ def main():
     #print(grid_res.best_estimator_)
 
     # Use the grid search results to predict the dest data
+    print("Using best performing descriptors of Grid Search to predict test data")
     y_pred = grid_res.predict(X_test)
 
     # Print the first 25 results of the testing predictions
@@ -292,7 +297,6 @@ def main():
         # Choose 6 random indices from list of incorrect indices
         rand_indices = np.random.choice(incorrect_idx, size=num, replace=False)
 
-    print(f"Displaying {num} incorrect guesses")
     # Set up the matplotlib figure and axes, based on the number of labels
     fig2, axes2 = plt.subplots(1, num)
     fig2.suptitle(f"{num} incorrect predictions from testing data")
@@ -303,12 +307,13 @@ def main():
     for ax, idx in zip(axes2, rand_indices):
         # Display the image
         ax.imshow(X_test[idx])
-        # Format the graph
-        #ax.axis('off')
+        # Format the graph title
+        ax.set_title(f"This is {y_pred[idx]}")
+        # Turn off axis tick markers
         ax.set_xticks([])
         ax.set_yticks([])
+        # Set the X Label to the filename
         ax.set_xlabel(f"{names_te[idx]}")
-        ax.set_title(f"This is {y_pred[idx]}")
     # Show the plot and wait for user to close it
     plt.show()
 
