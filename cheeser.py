@@ -109,32 +109,52 @@ def plot_confusion_matrix(cmx, vmax1=None, vmax2=None, vmax3=None):
     plt.show()
 
 def main():
+    # Base name of .pkl file
     base_name = 'cheese_or_not'
+    # Desired image width after resize
     width = 100
 
     print("Cheesing...")
+    # Check for number of arguments passed
     if len(argv) == 2:
+        # Validate init flag
         if argv[1] == 'init':
+            # Create path to data directories
             data_path = os.path.join("data")
+            # Subdirectories of data to include
             include = {'Cheese', 'NotCheese'}
             print("Reading and resizing all the data images")
+            # Check if the .pkl file exists already
             if os.path.isfile(f'{base_name}_{width}x{width}px.pkl'):
+                # If it does, delete it
                 os.remove(f'{base_name}_{width}x{width}px.pkl')
+            # Make new .pkl file with the data path, filename, resize width and included subdirectories
             resize_all(src=data_path, pklname=base_name, width=width, include=include)
+        # If more another arg is passed but it is not init flag
         else:
+            # Print usgae of program
             print('Usage: cheeser.py [init]')
+            # End program with status -1
             return -1
  
+    # Validate if .pkl file exists
     if os.path.isfile(f'{base_name}_{width}x{width}px.pkl'):
         print(f"Loading {base_name}_{width}x{width}px.pkl...")
+        # Load the data from the .pkl file
         data = joblib.load(f'{base_name}_{width}x{width}px.pkl')
+    # If the .pkl file doesn't exist
     else:
+        # Error
         print("Cannot find .pkl data file")
+        # End program with status -1
         return -1
  
+    # Iterate over each data entry
     for index in range(len(data['label'])):
+        # Fix truncated label due to np.unique
         data['label'][index] = data['label'][index] + 'eese'
 
+    # Print data informatgion
     print('number of samples: ', len(data['data']))
     print('keys: ', list(data.keys()))
     print('description: ', data['description'])
