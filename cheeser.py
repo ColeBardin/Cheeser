@@ -233,6 +233,16 @@ def main():
     }
     ]
 
+    grid_search = GridSearchCV(HOG_pipeline, 
+                           param_grid, 
+                           cv=3,
+                           n_jobs=-1,
+                           scoring='accuracy',
+                           verbose=1,
+                           return_train_score=True)
+ 
+    grid_res = grid_search.fit(X_train, y_train)
+
     clf = HOG_pipeline.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
