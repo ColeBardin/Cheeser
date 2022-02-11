@@ -204,7 +204,9 @@ def main():
     print("Splitting training and testing data")
     X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=0.9, names=names)
 
+    # Set up the HOG pipeline for optimized search
     HOG_pipeline = Pipeline([
+        # Transformers
         ('grayify', RGB2GrayTransformer()),
         ('hogify', HogTransformer(
             pixels_per_cell=(14, 14), 
@@ -216,6 +218,7 @@ def main():
         ('classify', SGDClassifier(random_state=42, max_iter=1000, tol=1e-3))
     ])
  
+    # Set up grid parameters
     param_grid = [
     {
         'hogify__orientations': [8, 9],
@@ -233,6 +236,7 @@ def main():
     }
     ]
 
+    # Create a grid search with the HOG pipeline
     grid_search = GridSearchCV(HOG_pipeline, 
                            param_grid, 
                            cv=3,
@@ -241,21 +245,15 @@ def main():
                            verbose=1,
                            return_train_score=True)
  
+    # Train the grid search to find the best descriptors
     grid_res = grid_search.fit(X_train, y_train)
 
     # save the model to disk
-    joblib.dump(grid_res, 'hog_sgd_model.pkl')
+    #joblib.dump(grid_res, 'hog_sgd_model.pkl')
+    # Print description of best performing object
+    #print(grid_res.best_estimator_)
 
-    # description of the best performing object, a pipeline in our case.
-    #grid_res.best_estimator_
-
-    Pipeline(steps=[('grayify', RGB2GrayTransformer()),
-                ('hogify', HogTransformer(orientations=8)),
-                ('scalify', StandardScaler()),
-                ('classify', svm.SVC(kernel='linear'))])
-
-    clf = HOG_pipeline.fit(X_train, y_train)
-    #y_pred = clf.predict(X_test)
+    # Use the grid search results to predict the dest data
     y_pred = grid_res.predict(X_test)
 
     # Print the first 25 results of the testing predictions
@@ -264,6 +262,7 @@ def main():
     # Generate the confusion matrix
     print("Generating confusion matrix")
     cmx = confusion_matrix(y_test, y_pred)
+    # Plot the confusion matrices
     plot_confusion_matrix(cmx)
 
     # Empty list to hold incorrect indexes
