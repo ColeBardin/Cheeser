@@ -19,7 +19,7 @@ from sys import argv
 from transformer_classes import *
 
 #Split dataset into training vs testing data. usually split 50/50 randomly is sufficient
-def get_train_test (X, y, f_tr):
+def get_train_test (X, y, f_tr, names):
     # get number of instances
     n = X.shape[0]
     # set number of images for training , testing
@@ -33,8 +33,10 @@ def get_train_test (X, y, f_tr):
     # split y_lst into training and testing
     y_tr = [y[i] for i in range(n) if i in i_tr]
     y_te = [y[i] for i in range(n) if i not in i_tr]
+    # Make list of all filenames for testing data 
+    names_te = [names[i] for i in range(n) if i not in i_tr]
     # return training and testing
-    return X_tr , X_te , y_tr , y_te
+    return X_tr , X_te , y_tr , y_te , names_te
 
 def resize_all(src, pklname, include, width=150, height=None):
     """
@@ -170,7 +172,7 @@ def main():
     # Set up the matplotlib figure and axes, based on the number of labels to display training data examples
     fig, axes = plt.subplots(1, len(labels))
     fig.suptitle("Examples from training data")
-    fig.set_size_inches(15,4)
+    fig.set_size_inches(14,4)
     fig.tight_layout()
  
     # Make a plot for every label (equipment) type. The index method returns the 
@@ -183,7 +185,7 @@ def main():
             if data['label'][index] == label:
                 choices.append(index)
         # Choose a random index from the list of chocies
-        idx = choices[randint(0, len(choices))]
+        idx = choices[randint(0, len(choices)-1)]
         # Display the image
         ax.imshow(data['data'][idx])
         # Format the plot
@@ -194,10 +196,11 @@ def main():
     # Turn the dictionary data into np arrays
     X = np.array(data['data'])
     y = np.array(data['label'])
+    names = np.array(data['filename'])
 
     # Split all data into training and testing based on desired ratio
     print("Splitting training and testing data")
-    X_train, X_test, y_train, y_test = get_train_test(X=X, y=y, f_tr=0.9)
+    X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=0.9, names=names)
 
     # Create an instance of each transformer
     grayify = RGB2GrayTransformer()
@@ -280,7 +283,7 @@ def main():
     # Set up the matplotlib figure and axes, based on the number of labels
     fig2, axes2 = plt.subplots(1, num)
     fig2.suptitle(f"{num} incorrect predictions from testing data")
-    fig2.set_size_inches(15,4)
+    fig2.set_size_inches(14,4)
     fig2.tight_layout()
 
     # Iterate over each axis and index
@@ -288,7 +291,10 @@ def main():
         # Display the image
         ax.imshow(X_test[idx])
         # Format the graph
-        ax.axis('off')
+        #ax.axis('off')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_xlabel(f"{names_te[idx]}")
         ax.set_title(f"This is {y_pred[idx]}")
     # Show the plot and wait for user to close it
     plt.show()
