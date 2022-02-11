@@ -83,44 +83,75 @@ def resize_all(src, pklname, include, width=150, height=None):
  
         joblib.dump(data, pklname)
 
+# Method to plot the confusion matrices
 def plot_confusion_matrix(cmx, vmax1=None, vmax2=None, vmax3=None):
+    # Create a numpy array with the corresponding respecive percentages of the cmx cells
     cmx_norm = 100*cmx / cmx.sum(axis=1, keepdims=True)
+    # Make a copy of this array
     cmx_zero_diag = cmx_norm.copy()
- 
+    # Fill it's diagonals with 0
     np.fill_diagonal(cmx_zero_diag, 0)
  
+    # Create figure with 3 subplots
     fig, ax = plt.subplots(ncols=3)
+    # Set figure title
     fig.suptitle("Confusion Matrices")
+    # Set the figure size
     fig.set_size_inches(12, 4)
+    # Add axis tick markers based on amount of incoming data
     [a.set_xticks(range(len(cmx)+1)) for a in ax]
     [a.set_yticks(range(len(cmx)+1)) for a in ax]
          
+    # Count confusion matrix
     im1 = ax[0].imshow(cmx, vmax=vmax1)
+    # Set subplot title
     ax[0].set_title('Count')
+    # Set subplot X label
     ax[0].set_xlabel("Predicted")
+    # Set subplot Y label
     ax[0].set_ylabel("True Label")
+    # Set X axis tick markers
     ax[0].set_xticklabels(['Cheese','NotCheese',''])
+    # Set Y axis tick markers
     ax[0].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
+
+    # Percentage confusion matrix
     im2 = ax[1].imshow(cmx_norm, vmax=vmax2)
-    ax[1].set_title('%')
+    # Set subplot title
+    ax[1].set_title('Percentage')
+    # Set X label
     ax[1].set_xlabel("Predicted")
+    # Set Y label
     ax[1].set_ylabel("True Label")
+    # Set X axis tick markers
     ax[1].set_xticklabels(['Cheese','NotCheese',''])
+    # Set Y axis tick markers
     ax[1].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
+
+    # % and 0 Diagonal confusion matrix
     im3 = ax[2].imshow(cmx_zero_diag, vmax=vmax3)
+    # Set the subplot title
     ax[2].set_title('% and 0 diagonal')
+    # Set X label
     ax[2].set_xlabel("Predicted")
+    # Set Y label
     ax[2].set_ylabel("True Label")
+    # Set X tick markers
     ax[2].set_xticklabels(['Cheese','NotCheese',''])
+    # Set Y tick markers
     ax[2].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
  
+    # Create dividers between the subplots
     dividers = [make_axes_locatable(a) for a in ax]
+    # Size and fit the axis with the padding
     cax1, cax2, cax3 = [divider.append_axes("right", size="5%", pad=0.1) 
                         for divider in dividers]
  
+    # Add color bars to each of the axis with their ranges
     fig.colorbar(im1, cax=cax1)
     fig.colorbar(im2, cax=cax2)
     fig.colorbar(im3, cax=cax3)
+    # Enable tight layout
     fig.tight_layout()
     # Uncomment plt.show() to have program wait until confusion matrix and data examples are closed
     #plt.show()
