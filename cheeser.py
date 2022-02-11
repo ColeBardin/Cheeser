@@ -216,6 +216,23 @@ def main():
         ('classify', SGDClassifier(random_state=42, max_iter=1000, tol=1e-3))
     ])
  
+    param_grid = [
+    {
+        'hogify__orientations': [8, 9],
+        'hogify__cells_per_block': [(2, 2), (3, 3)],
+        'hogify__pixels_per_cell': [(8, 8), (10, 10), (12, 12)]
+    },
+    {
+        'hogify__orientations': [8],
+         'hogify__cells_per_block': [(3, 3)],
+         'hogify__pixels_per_cell': [(8, 8)],
+         'classify': [
+             SGDClassifier(random_state=42, max_iter=1000, tol=1e-3),
+             svm.SVC(kernel='linear')
+         ]
+    }
+    ]
+
     clf = HOG_pipeline.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
