@@ -161,39 +161,45 @@ def main():
     print('image shape: ', data['data'][0].shape)
     print('labels:', np.unique(data['label']))
  
+    # Make counter dict of data
     Counter(data['label'])
     
-    # use np.unique to get all unique values in the list of labels
+    # Use np.unique to get all unique values in the list of labels
     labels = np.unique(data['label']) 
 
-    # set up the matplotlib figure and axes, based on the number of labels
+    # Set up the matplotlib figure and axes, based on the number of labels to display training data examples
     fig, axes = plt.subplots(1, len(labels))
     fig.suptitle("Examples from training data")
     fig.set_size_inches(15,4)
     fig.tight_layout()
  
-    # make a plot for every label (equipment) type. The index method returns the 
-    # index of the first item corresponding to its search string, label in this case
+    # Make a plot for every label (equipment) type. The index method returns the 
+    # Index of the first item corresponding to its search string, label in this case
     for ax, label in zip(axes, labels):
+        # Create empty list of choices
         choices = []
+        # Sort data by current label
         for index in range(len(data['label'])):
             if data['label'][index] == label:
                 choices.append(index)
-
+        # Choose a random index from the list of chocies
         idx = choices[randint(0, len(choices))]
-     
+        # Display the image
         ax.imshow(data['data'][idx])
+        # Format the plot
         ax.axis('off')
         filename = 'filename'
         ax.set_title(f'{data[filename][idx]}')
 
+    # Turn the dictionary data into np arrays
     X = np.array(data['data'])
     y = np.array(data['label'])
 
+    # Split all data into training and testing based on desired ratio
     print("Splitting training and testing data")
     X_train, X_test, y_train, y_test = get_train_test(X=X, y=y, f_tr=0.9)
 
-    # create an instance of each transformer
+    # Create an instance of each transformer
     grayify = RGB2GrayTransformer()
     hogify = HogTransformer(
         pixels_per_cell=(14, 14), 
@@ -203,62 +209,88 @@ def main():
     )
     scalify = StandardScaler()
  
-    # call fit_transform on each transform converting X_train step by step
+    # Grayify training data
     print("Grayifying training data")
     X_train_gray = grayify.fit_transform(X_train)
+    # HOGify the grayified training data
     print("HOGifying training data")
     X_train_hog = hogify.fit_transform(X_train_gray)
+    # Transform the HOGified training data
     print("Fitting the transfromed train data")
     X_train_prepared = scalify.fit_transform(X_train_hog)
  
+    # Output the shape of the prepared data
     print(X_train_prepared.shape)
 
+    # Make the SDG Classifier instance
     print("Training the SDG Classifier")
     sgd_clf = SGDClassifier(random_state=42, max_iter=1000, tol=1e-3)
+    # Train the SDG Classifier
     sgd_clf.fit(X_train_prepared, y_train)
 
+    # Grayify tesing data
     print("Grayifing the testing data")
     X_test_gray = grayify.transform(X_test)
+    # HOGify the grayified testing data
     print("HOGifying the testing data")
     X_test_hog = hogify.transform(X_test_gray)
+    # Transform the HOGified testing data
     print("Fitting the transofmred testing data")
     X_test_prepared = scalify.transform(X_test_hog)
 
-    print("Astimating the Cheesiness of the testing data")
+    # Test the SDG Classifier with the prepared testing data
+    print("Estimating the Cheesiness of the testing data")
     y_pred = sgd_clf.predict(X_test_prepared)
+    # Print the first 25 results of the testing predictions
     print(np.array(y_pred == y_test)[:25])
 
+    # Generate the confusion matrix
     print("Generating confusion matrix")
     cmx = confusion_matrix(y_test, y_pred)
     plot_confusion_matrix(cmx)
 
+    # Output results of the prediction
+    print('')
+    print(f"Number of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
+    print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
+
+    # Empty list to hold incorrect indexes
     incorrect_idx = []
+    # Iterate through predicted results
     for index in range(len(y_pred)):
+        # If the prediction is wrong
         if y_pred[index] != y_test[index]:
+            # Save the index of incorrect prediction
             incorrect_idx.append(index)
 
-    if len(incorrect_idx) < 6:
+    # If there are less than 6 incorrect answers
+    if len(incorrect_idx) <= 6:
+        # Only use those incorrect answers
         num = len(incorrect_idx)
+        # The chosen indexes should be all the incorrect predictions
         rand_indices = incorrect_idx
+    # If there are more than 6 incorrect predictions
     else:
+        # Only allow for 6 to be displayed
         num = 6
+        # Choose 6 random indices from list of incorrect indices
         rand_indices = np.random.choice(incorrect_idx, size=num, replace=False)
 
     print(f"Displaying {num} incorrect guesses")
-    # set up the matplotlib figure and axes, based on the number of labels
+    # Set up the matplotlib figure and axes, based on the number of labels
     fig2, axes2 = plt.subplots(1, num)
     fig2.suptitle(f"{num} incorrect predictions from testing data")
     fig2.set_size_inches(15,4)
     fig2.tight_layout()
 
-    print('')
-    print(f"Number of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
-    print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
-
+    # Iterate over each axis and index
     for ax, idx in zip(axes2, rand_indices):
+        # Display the image
         ax.imshow(X_test[idx])
+        # Format the graph
         ax.axis('off')
         ax.set_title(f"This is {y_pred[idx]}")
+    # Show the plot and wait for user to close it
     plt.show()
 
 if __name__ == '__main__':
