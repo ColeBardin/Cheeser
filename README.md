@@ -8,7 +8,7 @@ Trains with images of cheese and not cheese then makes predictions on a fraction
 
 ## cheeser.py
 
-Usage: `py cheeser.py [init]`
+Usage: `py cheeser.py [init|load]`
 
 Train software with photos of cheese and photos of not cheese
 
