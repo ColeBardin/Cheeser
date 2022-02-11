@@ -119,7 +119,7 @@ def main():
     # Desired image width after resize
     width = 100
 
-    print("Cheesing...")
+    print("Cheesing...\n")
     # Check for number of arguments passed
     if len(argv) == 2:
         # Validate init flag
@@ -128,7 +128,7 @@ def main():
             data_path = os.path.join("data")
             # Subdirectories of data to include
             include = {'Cheese', 'NotCheese'}
-            print("Reading and resizing all the data images")
+            print("Reading and resizing all the data images...")
             # Check if the .pkl file exists already
             if os.path.isfile(f'{base_name}_{width}x{width}px.pkl'):
                 # If it does, delete it
@@ -144,7 +144,7 @@ def main():
  
     # Validate if .pkl file exists
     if os.path.isfile(f'{base_name}_{width}x{width}px.pkl'):
-        print(f"Loading {base_name}_{width}x{width}px.pkl...")
+        print(f"Loading {base_name}_{width}x{width}px.pkl...\n")
         # Load the data from the .pkl file
         data = joblib.load(f'{base_name}_{width}x{width}px.pkl')
     # If the .pkl file doesn't exist
@@ -202,11 +202,11 @@ def main():
     names = np.array(data['filename'])
 
     # Split all data into training and testing based on desired ratio
-    print("Splitting training and testing data")
+    print("\nSplitting training and testing data")
     X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=0.9, names=names)
 
     # Set up the HOG pipeline for optimized search
-    print("Creating the HOG pipeline to optimze search")
+    print("\nCreating the HOG pipeline to optimze search")
     HOG_pipeline = Pipeline([
         # Transformers
         ('grayify', RGB2GrayTransformer()),
@@ -219,6 +219,14 @@ def main():
         ('scalify', StandardScaler()),
         ('classify', SGDClassifier(random_state=42, max_iter=1000, tol=1e-3))
     ])
+
+    # Generate a Classifier with only the hog pipeline
+    clf = HOG_pipeline.fit(X_train, y_train)
+
+    # Generate a prediction with only the HOG Pipeline
+    y_pred_clf = clf.predict(X_test)
+    # Calculate accuracy of Pipeline transform fit
+    clf_accuracy = 100*np.sum(y_pred_clf == y_test)/len(y_test)
  
     # Set up grid parameters
     param_grid = [
@@ -239,7 +247,7 @@ def main():
     ]
 
     # Create a grid search with the HOG pipeline
-    print("Creating Grid Search framework")
+    print("\nCreating Grid Search framework")
     grid_search = GridSearchCV(HOG_pipeline, 
                            param_grid, 
                            cv=3,
@@ -249,7 +257,7 @@ def main():
                            return_train_score=True)
  
     # Train the grid search to find the best descriptors
-    print("Training the grid search")
+    print("Training the grid search\n")
     grid_res = grid_search.fit(X_train, y_train)
 
     # save the model to disk
@@ -258,11 +266,22 @@ def main():
     #print(grid_res.best_estimator_)
 
     # Use the grid search results to predict the dest data
-    print("Using best performing descriptors of Grid Search to predict test data")
-    y_pred = grid_res.predict(X_test)
+    print("\nUsing best performing descriptors of Grid Search to predict test data")
+    y_pred_grid = grid_res.predict(X_test)
+    # Calculate accuracy of grid search
+    grid_accuracy = 100*np.sum(y_pred_grid == y_test)/len(y_test)
+    # Print out the accuracy of the CLF Pipeline fit
+    print(f"\nCLF is {clf_accuracy}% accurate")
+    # Print out the accuracy of the grid search
+    print(f"Grid search is {grid_accuracy}% accurate\n")
 
-    # Print the first 25 results of the testing predictions
-    print(np.array(y_pred == y_test)[:25])
+    # Compare accuracy of Grid search vs Pipeline transform fit
+    if grid_accuracy > clf_accuracy:
+        # Grid search is more accurate
+        y_pred = y_pred_grid
+    else:
+        # Pipeline is more accurate
+        y_pred = y_pred_clf
 
     # Generate the confusion matrix
     print("Generating confusion matrix")
