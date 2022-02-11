@@ -148,7 +148,8 @@ def main():
 
     # set up the matplotlib figure and axes, based on the number of labels
     fig, axes = plt.subplots(1, len(labels))
-    fig.set_size_inches(15,5)
+    fig.suptitle("Examples from training data")
+    fig.set_size_inches(15,4)
     fig.tight_layout()
  
     # make a plot for every label (equipment) type. The index method returns the 
@@ -164,7 +165,7 @@ def main():
         ax.imshow(data['data'][idx])
         ax.axis('off')
         filename = 'filename'
-        ax.set_title(f'{label}\n{data[filename][idx]}')
+        ax.set_title(f'{data[filename][idx]}')
 
     X = np.array(data['data'])
     y = np.array(data['label'])
@@ -225,16 +226,16 @@ def main():
 
     print(f"Displaying {num} incorrect guesses")
     # set up the matplotlib figure and axes, based on the number of labels
-    fig, axes = plt.subplots(1, num)
-    plt.title("Incorrect Guesses")
-    fig.set_size_inches(15,5)
-    fig.tight_layout()
+    fig2, axes2 = plt.subplots(1, num)
+    fig2.suptitle(f"{num} incorrect predictions from testing data")
+    fig2.set_size_inches(15,4)
+    fig2.tight_layout()
 
     print('')
     print(f"Number of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
     print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
 
-    for ax, idx in zip(axes, rand_indices):
+    for ax, idx in zip(axes2, rand_indices):
         ax.imshow(X_test[idx])
         ax.axis('off')
         ax.set_title(f"This is {y_pred[idx]}")
