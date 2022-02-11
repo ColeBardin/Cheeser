@@ -13,7 +13,6 @@ from sklearn.preprocessing import StandardScaler, Normalizer
 from sklearn.metrics import confusion_matrix
 from sklearn.pipeline import Pipeline
 from sklearn import svm
-import pandas as pd
 from collections import Counter
 from random import randint
 import random
@@ -61,7 +60,7 @@ def resize_all(src, pklname, include, width=150, height=None):
     height = height if height is not None else width
      
     data = dict()
-    data['description'] = 'resized ({0}x{1})animal images in rgb'.format(int(width), int(height))
+    data['description'] = 'resized ({0}x{1}) pixel images in rgb'.format(int(width), int(height))
     data['label'] = []
     data['filename'] = []
     data['data'] = []   
@@ -91,6 +90,7 @@ def plot_confusion_matrix(cmx, vmax1=None, vmax2=None, vmax3=None):
     np.fill_diagonal(cmx_zero_diag, 0)
  
     fig, ax = plt.subplots(ncols=3)
+    fig.suptitle("Confusion Matrices\n0=Cheese    1=NotCheese")
     fig.set_size_inches(12, 3)
     [a.set_xticks(range(len(cmx)+1)) for a in ax]
     [a.set_yticks(range(len(cmx)+1)) for a in ax]
@@ -172,29 +172,34 @@ def main():
     # Use np.unique to get all unique values in the list of labels
     labels = np.unique(data['label']) 
 
-    # Set up the matplotlib figure and axes, based on the number of labels to display training data examples
-    fig, axes = plt.subplots(1, len(labels))
-    fig.suptitle("Examples from training data")
-    fig.set_size_inches(14,4)
-    fig.tight_layout()
+    # Set to True to print out examples of the data images
+    print_examples = False
+
+    # If the data examples should be printed
+    if print_examples == True:
+        # Set up the matplotlib figure and axes, based on the number of labels to display training data examples
+        fig, axes = plt.subplots(1, len(labels))
+        fig.suptitle("Examples from training data")
+        fig.set_size_inches(14,4)
+        fig.tight_layout()
  
-    # Make a plot for every label (equipment) type. The index method returns the 
-    # Index of the first item corresponding to its search string, label in this case
-    for ax, label in zip(axes, labels):
-        # Create empty list of choices
-        choices = []
-        # Sort data by current label
-        for index in range(len(data['label'])):
-            if data['label'][index] == label:
-                choices.append(index)
-        # Choose a random index from the list of chocies
-        idx = choices[randint(0, len(choices)-1)]
-        # Display the image
-        ax.imshow(data['data'][idx])
-        # Format the plot
-        ax.axis('off')
-        filename = 'filename'
-        ax.set_title(f'{data[filename][idx]}')
+        # Make a plot for every label (equipment) type. The index method returns the 
+        # Index of the first item corresponding to its search string, label in this case
+        for ax, label in zip(axes, labels):
+            # Create empty list of choices
+            choices = []
+            # Sort data by current label
+            for index in range(len(data['label'])):
+                if data['label'][index] == label:
+                    choices.append(index)
+            # Choose a random index from the list of chocies
+            idx = choices[randint(0, len(choices)-1)]
+            # Display the image
+            ax.imshow(data['data'][idx])
+            # Format the plot
+            ax.axis('off')
+            filename = 'filename'
+            ax.set_title(f'{data[filename][idx]}')
 
     # Turn the dictionary data into np arrays
     X = np.array(data['data'])
@@ -260,8 +265,6 @@ def main():
     print("Training the grid search\n")
     grid_res = grid_search.fit(X_train, y_train)
 
-    # save the model to disk
-    #joblib.dump(grid_res, 'hog_sgd_model.pkl')
     # Print description of best performing object
     #print(grid_res.best_estimator_)
 
@@ -283,6 +286,11 @@ def main():
         # Pipeline is more accurate
         y_pred = y_pred_clf
 
+    # If the model has a greater accuracy than 90%
+    if 100*np.sum(y_pred == y_test)/len(y_test) > 90:
+        # Save the model to disk
+        joblib.dump(grid_res, 'hog_sgd_model.pkl')
+
     # Generate the confusion matrix
     print("Generating confusion matrix")
     cmx = confusion_matrix(y_test, y_pred)
@@ -298,9 +306,13 @@ def main():
             # Save the index of incorrect prediction
             incorrect_idx.append(index)
 
+    # Print the results table
+    print("\nFilename\tTrue Label\tPrediction")
+    for index in range(len(y_pred)):
+        print(f"{names_te[index]}\t{y_test[index]}\t{y_pred[index]}")
+
     # Output results of the prediction
-    print('')
-    print(f"Number of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
+    print(f"\nNumber of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
     print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
 
     # If there are less than 6 incorrect answers
