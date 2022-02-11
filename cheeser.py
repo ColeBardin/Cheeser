@@ -243,8 +243,20 @@ def main():
  
     grid_res = grid_search.fit(X_train, y_train)
 
+    # save the model to disk
+    joblib.dump(grid_res, 'hog_sgd_model.pkl')
+
+    # description of the best performing object, a pipeline in our case.
+    #grid_res.best_estimator_
+
+    Pipeline(steps=[('grayify', RGB2GrayTransformer()),
+                ('hogify', HogTransformer(orientations=8)),
+                ('scalify', StandardScaler()),
+                ('classify', svm.SVC(kernel='linear'))])
+
     clf = HOG_pipeline.fit(X_train, y_train)
-    y_pred = clf.predict(X_test)
+    #y_pred = clf.predict(X_test)
+    y_pred = grid_res.predict(X_test)
 
     # Print the first 25 results of the testing predictions
     print(np.array(y_pred == y_test)[:25])
