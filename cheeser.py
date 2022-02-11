@@ -160,18 +160,41 @@ def plot_confusion_matrix(cmx, vmax1=None, vmax2=None, vmax3=None):
     fig.tight_layout()
     # Uncomment plt.show() to have program wait until confusion matrix and data examples are closed
     #plt.show()
+    ax[0].set_xlabel("Predicted")
+    ax[0].set_ylabel("True Label")
+
+# Method to get target answer from the question
+def get_answer(message, targets):
+    # Prompt user
+    answer = input(message)
+    # Output response
+    print(answer)
+    # Check if response is in target answers
+    for target in targets:
+        # If there is a match
+        if answer.lower() == target.lower():
+            # Return the answer
+            return answer
+    # If there is no match implement recursion
+    return get_answer(message, targets)
 
 def main():
     # Base name of .pkl file
     base_name = 'cheese_or_not'
     # Desired image width after resize
     width = 100
+    # Define usage string
+    usage = 'Usage: py cheeser.py [init][load]'
+    # State to load or train model
+    load_sdg = False
+    # Variable for HOG SDG filename
+    hog_sdg_filename = 'hog_sgd_model.pkl'
 
     print("Cheesing...\n")
     # Check for number of arguments passed
-    if len(argv) == 2:
+    if len(argv) > 1:
         # Validate init flag
-        if argv[1] == 'init':
+        if 'init' in argv:
             # Create path to data directories
             data_path = os.path.join("data")
             # Subdirectories of data to include
@@ -183,6 +206,10 @@ def main():
                 os.remove(f'{base_name}_{width}x{width}px.pkl')
             # Make new .pkl file with the data path, filename, resize width and included subdirectories
             resize_all(src=data_path, pklname=base_name, width=width, include=include)
+        # If load flag is given
+        elif 'load' in argv:
+            # Enable loading sgd file instead of training new model
+            load_sdg = True
         # If more another arg is passed but it is not init flag
         else:
             # Print usgae of program
@@ -273,45 +300,52 @@ def main():
         ('classify', SGDClassifier(random_state=42, max_iter=1000, tol=1e-3))
     ])
 
-    # Generate a Classifier with only the hog pipeline
-    clf = HOG_pipeline.fit(X_train, y_train)
+    # If training a new HOG SDG file
+    if load_sdg == False:
+        # Generate a Classifier with only the hog pipeline
+        clf = HOG_pipeline.fit(X_train, y_train)
 
-    # Generate a prediction with only the HOG Pipeline
-    y_pred_clf = clf.predict(X_test)
-    # Calculate accuracy of Pipeline transform fit
-    clf_accuracy = 100*np.sum(y_pred_clf == y_test)/len(y_test)
- 
-    # Set up grid parameters
-    param_grid = [
-    {
-        'hogify__orientations': [8, 9],
-        'hogify__cells_per_block': [(2, 2), (3, 3)],
-        'hogify__pixels_per_cell': [(8, 8), (10, 10), (12, 12)]
-    },
-    {
-        'hogify__orientations': [8],
-         'hogify__cells_per_block': [(3, 3)],
-         'hogify__pixels_per_cell': [(8, 8)],
-         'classify': [
-             SGDClassifier(random_state=42, max_iter=1000, tol=1e-3),
-             svm.SVC(kernel='linear')
-         ]
-    }
-    ]
+        # Generate a prediction with only the HOG Pipeline
+        y_pred_clf = clf.predict(X_test)
+        # Calculate accuracy of Pipeline transform fit
+        clf_accuracy = 100*np.sum(y_pred_clf == y_test)/len(y_test)
+     
+        # Set up grid parameters
+        param_grid = [
+        {
+            'hogify__orientations': [8, 9],
+            'hogify__cells_per_block': [(2, 2), (3, 3)],
+            'hogify__pixels_per_cell': [(8, 8), (10, 10), (12, 12)]
+        },
+        {
+            'hogify__orientations': [8],
+             'hogify__cells_per_block': [(3, 3)],
+             'hogify__pixels_per_cell': [(8, 8)],
+             'classify': [
+                 SGDClassifier(random_state=42, max_iter=1000, tol=1e-3),
+                 svm.SVC(kernel='linear')
+             ]
+        }
+        ]
 
-    # Create a grid search with the HOG pipeline
-    print("\nCreating Grid Search framework")
-    grid_search = GridSearchCV(HOG_pipeline, 
-                           param_grid, 
-                           cv=3,
-                           n_jobs=-1,
-                           scoring='accuracy',
-                           verbose=1,
-                           return_train_score=True)
- 
-    # Train the grid search to find the best descriptors
-    print("Training the grid search\n")
-    grid_res = grid_search.fit(X_train, y_train)
+        # Create a grid search with the HOG pipeline
+        print("\nCreating Grid Search framework")
+        grid_search = GridSearchCV(HOG_pipeline, 
+                               param_grid, 
+                               cv=3,
+                               n_jobs=-1,
+                               scoring='accuracy',
+                               verbose=1,
+                               return_train_score=True)
+     
+        # Train the grid search to find the best descriptors
+        print("Training the grid search\n")
+        grid_res = grid_search.fit(X_train, y_train)
+    # If loading from a file
+    else:
+        print(f"\nReading model from {hog_sdg_filename}...")
+        # Load the file
+        grid_res = joblib.load(hog_sdg_filename)
 
     # Print description of best performing object
     #print(grid_res.best_estimator_)
@@ -321,23 +355,26 @@ def main():
     y_pred_grid = grid_res.predict(X_test)
     # Calculate accuracy of grid search
     grid_accuracy = 100*np.sum(y_pred_grid == y_test)/len(y_test)
-    # Print out the accuracy of the CLF Pipeline fit
-    print(f"\nCLF is {clf_accuracy}% accurate")
+    # If training a new model
+    if load_sdg == False:
+        # Print out the accuracy of the CLF Pipeline fit
+        print(f"\nCLF is {clf_accuracy}% accurate")
     # Print out the accuracy of the grid search
     print(f"Grid search is {grid_accuracy}% accurate\n")
 
-    # Compare accuracy of Grid search vs Pipeline transform fit
-    if grid_accuracy > clf_accuracy:
-        # Grid search is more accurate
-        y_pred = y_pred_grid
+    # Only compare accuracies if both are performed when training new models
+    if load_sdg == False:
+        # Compare accuracy of Grid search vs Pipeline transform fit
+        if grid_accuracy > clf_accuracy:
+            # Grid search is more accurate
+            y_pred = y_pred_grid
+        else:
+            # Pipeline is more accurate
+            y_pred = y_pred_clf
+    # If loading grid model
     else:
-        # Pipeline is more accurate
-        y_pred = y_pred_clf
-
-    # If the model has a greater accuracy than 90%
-    if 100*np.sum(y_pred == y_test)/len(y_test) > 90:
-        # Save the model to disk
-        joblib.dump(grid_res, 'hog_sgd_model.pkl')
+        # Use the grid model predictions
+        y_pred = y_pred_grid
 
     # Generate the confusion matrix
     print("Generating confusion matrix")
@@ -376,25 +413,45 @@ def main():
         # Choose 6 random indices from list of incorrect indices
         rand_indices = np.random.choice(incorrect_idx, size=num, replace=False)
 
-    # Set up the matplotlib figure and axes, based on the number of labels
-    fig2, axes2 = plt.subplots(1, num)
-    fig2.suptitle(f"{num} incorrect predictions from testing data")
-    fig2.set_size_inches(14,4)
-    fig2.tight_layout()
+    # If there are no incorrect answers
+    if num != 0:
+        print(num)
+        # Set up the matplotlib figure and axes, based on the number of labels
+        fig2, axes2 = plt.subplots(1, num)
+        fig2.suptitle(f"{num} incorrect predictions from testing data")
+        fig2.set_size_inches(14,4)
+        fig2.tight_layout()
 
-    # Iterate over each axis and index
-    for ax, idx in zip(axes2, rand_indices):
-        # Display the image
-        ax.imshow(X_test[idx])
-        # Format the graph title
-        ax.set_title(f"This is {y_pred[idx]}")
-        # Turn off axis tick markers
-        ax.set_xticks([])
-        ax.set_yticks([])
-        # Set the X Label to the filename
-        ax.set_xlabel(f"{names_te[idx]}")
-    # Show the plot and wait for user to close it
-    plt.show()
+        # If there is only 1 axis
+        if num == 1:
+            # Turn it into a list
+            axes_list = [axes2]
+        # If there are more than 1 axes
+        else:
+            # Use the pregenerated list
+            axes_list = axes2
+
+        # Iterate over each axis and index
+        for ax, idx in zip(axes_list, rand_indices):
+            # Display the image
+            ax.imshow(X_test[idx])
+            # Format the graph title
+            ax.set_title(f"This is {y_pred[idx]}")
+            # Turn off axis tick markers
+            ax.set_xticks([])
+            ax.set_yticks([])
+            # Set the X Label to the filename
+            ax.set_xlabel(f"{names_te[idx]}")
+        # Show the plot and wait for user to close it
+        plt.show()
+
+    # If it trained a new sdg model
+    if load_sdg == False:
+        # Prompt user to save it
+        if get_answer(f"Save HOG SDG model as {hog_sdg_filename}? (Y/N)", ['y','n']) == 'y':
+            print("Saving HOG SDG model to .pkl file")
+            # Dump the data into a .pkl file
+            joblib.dump(grid_res, hog_sdg_filename)
 
 if __name__ == '__main__':
     main()
