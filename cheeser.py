@@ -189,6 +189,8 @@ def main():
     load_sdg = False
     # Variable for HOG SDG filename
     hog_sdg_filename = 'hog_sgd_model.pkl'
+    # Define the fraction of data to be trained with
+    train_fraction = 0.9
 
     # Check for number of arguments passed
     if len(argv) == 2:
@@ -288,9 +290,17 @@ def main():
     y = np.array(data['label'])
     names = np.array(data['filename'])
 
-    # Split all data into training and testing based on desired ratio
     print("\nSplitting training and testing data")
-    X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=0.9, names=names)
+    # If loading from a file
+    if load_sdg == True:
+        # Test all the data
+        f_tr = 0
+    # When training a new model
+    else:
+        # Use predefined training fraction
+        f_tr = train_fraction
+    # Split all data into training and testing based on desired ratio
+    X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=f_tr, names=names)
 
     # Set up the HOG pipeline for optimized search
     print("\nCreating the HOG pipeline to optimze search")
