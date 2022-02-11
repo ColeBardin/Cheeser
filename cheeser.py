@@ -184,17 +184,16 @@ def main():
     # Desired image width after resize
     width = 100
     # Define usage string
-    usage = 'Usage: py cheeser.py [init][load]'
+    usage = 'Usage: py cheeser.py [init|load]'
     # State to load or train model
     load_sdg = False
     # Variable for HOG SDG filename
     hog_sdg_filename = 'hog_sgd_model.pkl'
 
-    print("Cheesing...\n")
     # Check for number of arguments passed
-    if len(argv) > 1:
+    if len(argv) == 2:
         # Validate init flag
-        if 'init' in argv:
+        if argv[1] == 'init':
             # Create path to data directories
             data_path = os.path.join("data")
             # Subdirectories of data to include
@@ -207,15 +206,23 @@ def main():
             # Make new .pkl file with the data path, filename, resize width and included subdirectories
             resize_all(src=data_path, pklname=base_name, width=width, include=include)
         # If load flag is given
-        elif 'load' in argv:
+        elif argv[1] == 'load':
             # Enable loading sgd file instead of training new model
             load_sdg = True
         # If more another arg is passed but it is not init flag
         else:
             # Print usgae of program
-            print('Usage: cheeser.py [init]')
+            print(usage)
             # End program with status -1
             return -1
+    # If there are more than 2 argument flags
+    elif len(argv) > 2:
+        # Print usage
+        print(usage)
+        # End program and return -1
+        return -1
+
+    print("Cheesing...\n")
  
     # Validate if .pkl file exists
     if os.path.isfile(f'{base_name}_{width}x{width}px.pkl'):
@@ -415,7 +422,6 @@ def main():
 
     # If there are no incorrect answers
     if num != 0:
-        print(num)
         # Set up the matplotlib figure and axes, based on the number of labels
         fig2, axes2 = plt.subplots(1, num)
         fig2.suptitle(f"{num} incorrect predictions from testing data")
