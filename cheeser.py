@@ -208,12 +208,23 @@ def main():
     cmx = confusion_matrix(y_test, y_pred)
     plot_confusion_matrix(cmx)
 
+    incorrect_idx = []
+    for index in range(len(y_pred)):
+        if y_pred[index] != y_test[index]:
+            incorrect_idx.append(index)
+
+    if len(incorrect_idx) < 6:
+        num = len(incorrect_idx)
+        rand_indices = incorrect_idx
+    else:
+        num = 6
+        rand_indices = np.random.choice(incorrect_idx, size=num, replace=False)
+
     # set up the matplotlib figure and axes, based on the number of labels
-    fig, axes = plt.subplots(1, 6)
+    fig, axes = plt.subplots(1, num)
+    plt.title("Incorrect Guesses")
     fig.set_size_inches(15,4)
     fig.tight_layout()
-
-    rand_indices = np.random.choice(range(len(y_pred)), size=6, replace=False)
 
     for ax, idx in zip(axes, rand_indices):
         ax.imshow(X_test[idx])
