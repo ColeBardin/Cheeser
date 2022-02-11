@@ -118,6 +118,8 @@ def main():
             data_path = os.path.join("data")
             include = {'Cheese', 'NotCheese'}
             print("Reading and resizing all the data images")
+            if os.path.isfile(f'{base_name}_{width}x{width}px.pkl'):
+                os.remove(f'{base_name}_{width}x{width}px.pkl')
             resize_all(src=data_path, pklname=base_name, width=width, include=include)
         else:
             print('Usage: cheeser.py [init]')
@@ -161,7 +163,8 @@ def main():
      
         ax.imshow(data['data'][idx])
         ax.axis('off')
-        ax.set_title(label)
+        filename = 'filename'
+        ax.set_title(f'{label}\n{data[filename][idx]}')
 
     X = np.array(data['data'])
     y = np.array(data['label'])
