@@ -225,15 +225,15 @@ def main():
     fig.set_size_inches(15,4)
     fig.tight_layout()
 
+    print('')
+    print(f"Number of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
+    print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
+
     for ax, idx in zip(axes, rand_indices):
         ax.imshow(X_test[idx])
         ax.axis('off')
         ax.set_title("This is {}".format(y_pred[idx]))
     plt.show()
-
-    print('')
-    print(f"Number of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
-    print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
 
 if __name__ == '__main__':
     main()
