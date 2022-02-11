@@ -34,8 +34,6 @@ Imports `transformer_classes.py` for better image processing
 
 [Scikit-Learn](https://pypi.org/project/scikit-learn/)
 
-[Pandas](https://pypi.org/project/pandas/)
-
 ### transformer_classes.py:
 
 [Scikit-Learn](https://pypi.org/project/scikit-learn/)
