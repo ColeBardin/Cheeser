@@ -202,7 +202,7 @@ def main():
     fig.set_size_inches(15,4)
     fig.tight_layout()
 
-    rand_indices = random.choices(range(len(y_pred)), k=6)
+    rand_indices = random.choices(range(len(y_pred)), replace=False, k=6)
 
     for ax, idx in zip(axes, rand_indices):
         ax.imshow(X_test[idx])
