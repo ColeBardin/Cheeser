@@ -148,7 +148,7 @@ def main():
 
     # set up the matplotlib figure and axes, based on the number of labels
     fig, axes = plt.subplots(1, len(labels))
-    fig.set_size_inches(15,4)
+    fig.set_size_inches(15,5)
     fig.tight_layout()
  
     # make a plot for every label (equipment) type. The index method returns the 
@@ -227,7 +227,7 @@ def main():
     # set up the matplotlib figure and axes, based on the number of labels
     fig, axes = plt.subplots(1, num)
     plt.title("Incorrect Guesses")
-    fig.set_size_inches(15,4)
+    fig.set_size_inches(15,5)
     fig.tight_layout()
 
     print('')
@@ -237,7 +237,7 @@ def main():
     for ax, idx in zip(axes, rand_indices):
         ax.imshow(X_test[idx])
         ax.axis('off')
-        ax.set_title("This is {}".format(y_pred[idx]))
+        ax.set_title(f"This is {y_pred[idx]}")
     plt.show()
 
 if __name__ == '__main__':
