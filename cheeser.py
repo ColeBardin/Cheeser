@@ -67,7 +67,7 @@ def resize_all(src, pklname, include, width=150, height=None):
     # read all images in PATH, resize and write to DESTINATION_PATH
     for subdir in os.listdir(src):
         if subdir in include:
-            print(subdir)
+            print(f"Learning about {subdir}...")
             current_path = os.path.join(src, subdir)
  
             for file in os.listdir(current_path):
