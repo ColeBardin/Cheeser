@@ -165,7 +165,7 @@ def main():
     y = np.array(data['label'])
 
     print("Splitting training and testing data")
-    X_train, X_test, y_train, y_test = get_train_test(X, y, 0.9)
+    X_train, X_test, y_train, y_test = get_train_test(X=X, y=y, f_tr=0.9)
 
     # create an instance of each transformer
     grayify = RGB2GrayTransformer()
@@ -201,8 +201,6 @@ def main():
     print("Astimating the Cheesiness of the testing data")
     y_pred = sgd_clf.predict(X_test_prepared)
     print(np.array(y_pred == y_test)[:25])
-    print('')
-    print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
 
     print("Generating confusion matrix")
     cmx = confusion_matrix(y_test, y_pred)
@@ -220,6 +218,7 @@ def main():
         num = 6
         rand_indices = np.random.choice(incorrect_idx, size=num, replace=False)
 
+    print(f"Displaying {num} incorrect guesses")
     # set up the matplotlib figure and axes, based on the number of labels
     fig, axes = plt.subplots(1, num)
     plt.title("Incorrect Guesses")
@@ -231,6 +230,10 @@ def main():
         ax.axis('off')
         ax.set_title("This is {}".format(y_pred[idx]))
     plt.show()
+
+    print('')
+    print(f"Number of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
+    print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
 
 if __name__ == '__main__':
     main()
