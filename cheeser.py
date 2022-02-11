@@ -39,48 +39,53 @@ def get_train_test (X, y, f_tr, names):
     # return training and testing
     return X_tr , X_te , y_tr , y_te , names_te
 
+# Method to resize all of the images and save a .pkl file of the data
 def resize_all(src, pklname, include, width=150, height=None):
-    """
-    load images from path, resize them and write them as arrays to a dictionary, 
-    together with labels and metadata. The dictionary is written to a pickle file 
-    named '{pklname}_{width}x{height}px.pkl'.
-     
-    Parameter
-    ---------
-    src: str
-        path to data
-    pklname: str
-        path to output file
-    width: int
-        target width of the image in pixels
-    include: set[str]
-        set containing str
-    """
-     
+    # Parameters:
+    # src: str
+        # path to data
+    # pklname: str
+        # path to output file
+    # width: int
+        # target width of the image in pixels
+    # include: set[str]
+        # set containing str
+
+    # If specified height is given, use that else use the default width     
     height = height if height is not None else width
-     
+    # Create empty dictionary
     data = dict()
+    # Set the description
     data['description'] = 'resized ({0}x{1}) pixel images in rgb'.format(int(width), int(height))
+    # Initialize empty values for the keys label, filename and data
     data['label'] = []
     data['filename'] = []
     data['data'] = []   
-     
+    # Create .pkl file name
     pklname = f"{pklname}_{width}x{height}px.pkl"
  
-    # read all images in PATH, resize and write to DESTINATION_PATH
+    # Read all subdirectories from the source
     for subdir in os.listdir(src):
+        # If the sundirectory is instructed to be included
         if subdir in include:
             print(f"Learning about {subdir}...")
+            # Create the path to the subdirectory
             current_path = os.path.join(src, subdir)
- 
+            # Iterate over each file in the subdirectory
             for file in os.listdir(current_path):
+                # Only read from .jpg and .png files
                 if file[-3:] in {'jpg', 'png'}:
+                    # Read the image
                     im = imread(os.path.join(current_path, file))
+                    # Resize it with the specified format
                     im = resize(im, (width, height)) #[:,:,::-1]
+                    # Add entry of label to subdirectory
                     data['label'].append(subdir[:-4])
+                    # Add filename entry
                     data['filename'].append(file)
+                    # Append the image data to the dictionary
                     data['data'].append(im)
- 
+        # Create a .pkl file to store image data for later reference
         joblib.dump(data, pklname)
 
 # Method to plot the confusion matrices
