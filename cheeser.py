@@ -249,11 +249,6 @@ def main():
     cmx = confusion_matrix(y_test, y_pred)
     plot_confusion_matrix(cmx)
 
-    # Output results of the prediction
-    print('')
-    print(f"Number of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
-    print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
-
     # Empty list to hold incorrect indexes
     incorrect_idx = []
     # Iterate through predicted results
@@ -262,6 +257,11 @@ def main():
         if y_pred[index] != y_test[index]:
             # Save the index of incorrect prediction
             incorrect_idx.append(index)
+
+    # Output results of the prediction
+    print('')
+    print(f"Number of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
+    print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
 
     # If there are less than 6 incorrect answers
     if len(incorrect_idx) <= 6:
