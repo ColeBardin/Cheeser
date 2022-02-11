@@ -11,6 +11,8 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.model_selection import cross_val_predict
 from sklearn.preprocessing import StandardScaler, Normalizer
 from sklearn.metrics import confusion_matrix
+from sklearn.pipeline import Pipeline
+from sklearn import svm
 import pandas as pd
 from collections import Counter
 from random import randint
@@ -202,48 +204,21 @@ def main():
     print("Splitting training and testing data")
     X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=0.9, names=names)
 
-    # Create an instance of each transformer
-    grayify = RGB2GrayTransformer()
-    hogify = HogTransformer(
-        pixels_per_cell=(14, 14), 
-        cells_per_block=(2,2), 
-        orientations=9, 
-        block_norm='L2-Hys'
-    )
-    scalify = StandardScaler()
+    HOG_pipeline = Pipeline([
+        ('grayify', RGB2GrayTransformer()),
+        ('hogify', HogTransformer(
+            pixels_per_cell=(14, 14), 
+            cells_per_block=(2, 2), 
+            orientations=9, 
+            block_norm='L2-Hys')
+        ),
+        ('scalify', StandardScaler()),
+        ('classify', SGDClassifier(random_state=42, max_iter=1000, tol=1e-3))
+    ])
  
-    # Grayify training data
-    print("Grayifying training data")
-    X_train_gray = grayify.fit_transform(X_train)
-    # HOGify the grayified training data
-    print("HOGifying training data")
-    X_train_hog = hogify.fit_transform(X_train_gray)
-    # Transform the HOGified training data
-    print("Fitting the transfromed train data")
-    X_train_prepared = scalify.fit_transform(X_train_hog)
- 
-    # Output the shape of the prepared data
-    print(X_train_prepared.shape)
+    clf = HOG_pipeline.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
 
-    # Make the SDG Classifier instance
-    print("Training the SDG Classifier")
-    sgd_clf = SGDClassifier(random_state=42, max_iter=1000, tol=1e-3)
-    # Train the SDG Classifier
-    sgd_clf.fit(X_train_prepared, y_train)
-
-    # Grayify tesing data
-    print("Grayifing the testing data")
-    X_test_gray = grayify.transform(X_test)
-    # HOGify the grayified testing data
-    print("HOGifying the testing data")
-    X_test_hog = hogify.transform(X_test_gray)
-    # Transform the HOGified testing data
-    print("Fitting the transofmred testing data")
-    X_test_prepared = scalify.transform(X_test_hog)
-
-    # Test the SDG Classifier with the prepared testing data
-    print("Estimating the Cheesiness of the testing data")
-    y_pred = sgd_clf.predict(X_test_prepared)
     # Print the first 25 results of the testing predictions
     print(np.array(y_pred == y_test)[:25])
 
