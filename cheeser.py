@@ -90,17 +90,29 @@ def plot_confusion_matrix(cmx, vmax1=None, vmax2=None, vmax3=None):
     np.fill_diagonal(cmx_zero_diag, 0)
  
     fig, ax = plt.subplots(ncols=3)
-    fig.suptitle("Confusion Matrices\n0=Cheese    1=NotCheese")
-    fig.set_size_inches(12, 3)
+    fig.suptitle("Confusion Matrices")
+    fig.set_size_inches(12, 4)
     [a.set_xticks(range(len(cmx)+1)) for a in ax]
     [a.set_yticks(range(len(cmx)+1)) for a in ax]
          
     im1 = ax[0].imshow(cmx, vmax=vmax1)
-    ax[0].set_title('as is')
+    ax[0].set_title('Count')
+    ax[0].set_xlabel("Predicted")
+    ax[0].set_ylabel("True Label")
+    ax[0].set_xticklabels(['Cheese','NotCheese',''])
+    ax[0].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
     im2 = ax[1].imshow(cmx_norm, vmax=vmax2)
     ax[1].set_title('%')
+    ax[1].set_xlabel("Predicted")
+    ax[1].set_ylabel("True Label")
+    ax[1].set_xticklabels(['Cheese','NotCheese',''])
+    ax[1].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
     im3 = ax[2].imshow(cmx_zero_diag, vmax=vmax3)
     ax[2].set_title('% and 0 diagonal')
+    ax[2].set_xlabel("Predicted")
+    ax[2].set_ylabel("True Label")
+    ax[2].set_xticklabels(['Cheese','NotCheese',''])
+    ax[2].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
  
     dividers = [make_axes_locatable(a) for a in ax]
     cax1, cax2, cax3 = [divider.append_axes("right", size="5%", pad=0.1) 
