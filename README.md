@@ -34,6 +34,8 @@ Imports `transformer_classes.py` for better image processing
 
 [Scikit-Learn](https://pypi.org/project/scikit-learn/)
 
+[Scikit-Image](https://github.com/ColeBardin/Cheeser.git)
+
 ### transformer_classes.py:
 
 [Scikit-Learn](https://pypi.org/project/scikit-learn/)
