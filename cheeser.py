@@ -561,29 +561,35 @@ def main():
             # Print file and prediction
             print(f"{testing_data['filename'][index]}\t{y_pred_grid[index]}")
    
+        # Get the amount of files being tested
         number_of_tests = len(os.listdir(path_to_indir))
-        if number_of_tests >= 6:
-            num2 = 6
+        # If there are more than 6 testing images
+        if number_of_tests > 6:
+            # Number is 6
+            num = 6
+        # If there are less than 6 testing files
         else:
-            num2 = number_of_tests
+            # Number is the amount of testing files
+            num = number_of_tests
         
-        fig3, axes3 = plt.subplots(1, num2)
-        fig3.suptitle(f"{num2} predictions from ./indir testing images")
+        fig3, axes3 = plt.subplots(1, num)
+        fig3.suptitle(f"{num} predictions from ./indir testing images")
         fig3.set_size_inches(14,4)
         fig3.tight_layout()
 
         # If there is only 1 axis
-        if num2 == 1:
+        if num == 1:
             # Turn it into a list
-            axes_list2 = [axes3]
+            axes_list = [axes3]
         # If there are more than 1 axes
         else:
             # Use the pregenerated list
-            axes_list2 = axes3
+            axes_list = axes3
 
-        rand_indices = np.random.choice(range(number_of_tests), size=num2, replace=False)
+        # Generate random indices of the predictions
+        rand_indices = np.random.choice(range(number_of_tests), size=num, replace=False)
         # Iterate over each axis and index
-        for ax, idx in zip(axes_list2, rand_indices):
+        for ax, idx in zip(axes_list, rand_indices):
             # Display the image
             ax.imshow(testing_data['data'][idx])
             # Format the graph title
