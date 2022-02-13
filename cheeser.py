@@ -271,7 +271,7 @@ def main():
             # Check if indir exists
             if os.path.isdir(path_to_indir) == False:
                 # Print error
-                print("ERROR: Cannot find ./indir")
+                print("ERROR: Cannot find /indir")
                 # Print usage
                 print(usage)
                 # End program and return -1
@@ -279,7 +279,7 @@ def main():
             # Check if there are files in indir
             elif len(os.listdir(path_to_indir)) == 0:
                 # Print error
-                print("ERROR: No files in ./indir")
+                print("ERROR: No files in /indir")
                 # Print usage
                 print(usage)
                 # End program and return -1
@@ -361,7 +361,7 @@ def main():
 
     # If testing indir data
     if test_indir == True:
-        print("\nReading images from ./indir")
+        print("\nReading images from /indir")
         # Read images
         testing_data = resize_indir(path_to_indir, width=width)
         # Split indir data
@@ -574,7 +574,7 @@ def main():
         
         # Set up the matplotlib figure and axes, based on the number of labels
         fig3, axes3 = plt.subplots(1, num)
-        fig3.suptitle(f"{num} predictions from ./indir testing images")
+        fig3.suptitle(f"{num} predictions from /indir testing images")
         fig3.set_size_inches(14,4)
         fig3.tight_layout()
 
