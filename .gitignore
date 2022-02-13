@@ -128,5 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Demo data
 Image/
+
+# Mac Shit
 .DS_Store
