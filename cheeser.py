@@ -352,9 +352,11 @@ def main():
             idx = choices[randint(0, len(choices)-1)]
             # Display the image
             ax.imshow(data['data'][idx])
-            # Format the plot
+            # Turn off the axis
             ax.axis('off')
+            # Create variable to hold string to not interfere with fstring
             filename = 'filename'
+            # Set the title
             ax.set_title(f'{data[filename][idx]}')
 
     # Turn the dictionary data into np arrays
@@ -453,6 +455,7 @@ def main():
     print("\nUsing best performing descriptors of Grid Search to predict test data")
     y_pred_grid = grid_res.predict(X_test)
 
+    # When not testing from indir
     if test_indir == False:
         # Calculate accuracy of grid search
         grid_accuracy = 100*np.sum(y_pred_grid == y_test)/len(y_test)
@@ -548,7 +551,9 @@ def main():
     else:
         print("HOG SGD Model Predictions:\n")
         print("Filename\tPrediction")
+        # Iterate over each file
         for index in range(len(X_test)):
+            # Print file and prediction
             print(f"{testing_data['filename'][index]}\t{y_pred_grid[index]}")
 
     # If it trained a new sdg model
