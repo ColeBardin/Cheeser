@@ -420,14 +420,15 @@ def main():
     if load_sdg == False:
         # Check if testing indir is true
         if test_indir == True:
+            print("Searching for fully trained model...\n")
             # Check if there is a fully trained model
             if os.path.isfile(full_train_model) == True:
-                print("Reading from fully trained model\n")
+                print("Model found! Reading data...\n")
                 grid_res = joblib.load(full_train_model)
             # If there is not a fully trained model present
             else:
                 # Train the grid search to find the best descriptors
-                print("Generating new fully trained grid search")
+                print("Generating new fully trained grid search...\n")
                 # Create the grid search method
                 grid_res = grid_search.fit(X_train, y_train)
                 # Save the fully trained grid model
@@ -435,7 +436,7 @@ def main():
                 print(f"New fully trained model saved as {full_train_model}\n")
         # Make a new model
         else:
-            print("Training CLF\n")
+            print("Training CLF...\n")
             # Generate a Classifier with only the hog pipeline
             clf = HOG_pipeline.fit(X_train, y_train)
 
@@ -445,7 +446,7 @@ def main():
             clf_accuracy = 100*np.sum(y_pred_clf == y_test)/len(y_test)
         
             # Train the grid search to find the best descriptors
-            print("Training the grid search\n")
+            print("Training the grid search...\n")
             grid_res = grid_search.fit(X_train, y_train)
     # If loading from a file
     else:
@@ -457,7 +458,7 @@ def main():
     #print(grid_res.best_estimator_)
 
     # Use the grid search results to predict the dest data
-    print("Using best performing descriptors of Grid Search to predict test data\n")
+    print("Using best performing descriptors of Grid Search to predict test data...\n")
     y_pred_grid = grid_res.predict(X_test)
 
     # When not testing from indir
@@ -486,7 +487,7 @@ def main():
             y_pred = y_pred_grid
 
         # Generate the confusion matrix
-        print("Generating confusion matrix\n")
+        print("Generating confusion matrix...\n")
         cmx = confusion_matrix(y_test, y_pred)
         # Plot the confusion matrices
         plot_confusion_matrix(cmx)
