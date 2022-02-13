@@ -20,7 +20,7 @@ from sys import argv
 from transformer_classes import *
 
 #Split dataset into training vs testing data. usually split 50/50 randomly is sufficient
-def get_train_test (X, y, f_tr, names):
+def get_train_test (X, y, f_tr, names, test=False, indir_data=None):
     # get number of instances
     n = X.shape[0]
     # set number of images for training , testing
@@ -30,14 +30,54 @@ def get_train_test (X, y, f_tr, names):
     i_tr = np.random.choice(n, n_tr , replace=False)
     # split X_lst into training and testing
     X_tr = [X[i] for i in range(n) if i in i_tr]
-    X_te = [X[i] for i in range(n) if i not in i_tr]
+    # If not testing indir data
+    if test == False:
+        # Set X testing data
+        X_te = [X[i] for i in range(n) if i not in i_tr]
+        # Set Y testing data
+        y_te = [y[i] for i in range(n) if i not in i_tr]
+    # If indir data is passed correctly
+    elif indir_data is not None:
+        # Set X testing data
+        X_te = indir_data[0]
+        # Set Y testing data
+        y_te = indir_data[1]
     # split y_lst into training and testing
     y_tr = [y[i] for i in range(n) if i in i_tr]
-    y_te = [y[i] for i in range(n) if i not in i_tr]
     # Make list of all filenames for testing data 
     names_te = [names[i] for i in range(n) if i not in i_tr]
     # return training and testing
     return X_tr , X_te , y_tr , y_te , names_te
+
+# Method to resize all of the images from the indir testing diredtory
+def resize_indir(src, width=150, height=None):
+    # If specified height is given, use that else use the default width     
+    height = height if height is not None else width
+    # Create empty dictionary
+    testing = dict()
+    # Set the description
+    testing['description'] = 'resized ({0}x{1}) testing data from ./ir in rgb'.format(int(width), int(height))
+    # Initialize empty values for the keys label, filename and data
+    testing['label'] = []
+    testing['filename'] = []
+    testing['data'] = []   
+ 
+    # Iterate over each file in indir
+    for file in os.listdir(src):
+        # Only read from .jpg and .png files
+        if file[-3:] in {'jpg', 'png'}:
+            # Read the image
+            im = imread(os.path.join(src, file))
+            # Resize it with the specified format
+            im = resize(im, (width, height)) #[:,:,::-1]
+            # Add entry of label to subdirectory
+            testing['label'].append("Unknown")
+            # Add filename entry
+            testing['filename'].append(file)
+            # Append the image data to the dictionary
+            testing['data'].append(im) 
+        # Return the list of testing data
+    return testing
 
 # Method to resize all of the images and save a .pkl file of the data
 def resize_all(src, pklname, include, width=150, height=None):
@@ -184,13 +224,19 @@ def main():
     # Desired image width after resize
     width = 100
     # Define usage string
-    usage = 'Usage: py cheeser.py [init|load]'
+    usage = 'Usage: py cheeser.py [init|load|test]'
     # State to load or train model
     load_sdg = False
     # Variable for HOG SDG filename
     hog_sdg_filename = 'hog_sgd_model.pkl'
     # Define the fraction of data to be trained with
-    train_fraction = 0.9
+    f_tr = 0.9
+    # Status for testing indir photos
+    test_indir = False
+    # Variable to hold path to indir
+    path_to_indir = 'indir'
+    # Variable to hold fully trained model
+    full_train_model = 'full_train_model.pkl'
 
     # Check for number of arguments passed
     if len(argv) == 2:
@@ -211,6 +257,30 @@ def main():
         elif argv[1] == 'load':
             # Enable loading sgd file instead of training new model
             load_sdg = True
+            # Set training fraction to be 0
+            f_tr = 0
+        # If testing from indir flag is given
+        elif argv[1] == 'test':
+            # Enable testing
+            test_indir = True
+            # Train with all the given data
+            f_tr = 1
+            # Check if indir exists
+            if os.path.isdir(path_to_indir) == False:
+                # Print error
+                print("ERROR: Cannot find ./indir")
+                # Print usage
+                print(usage)
+                # End program and return -1
+                return -1
+            # Check if there are files in indir
+            elif len(os.listdir(path_to_indir)) == 0:
+                # Print error
+                print("ERROR: No files in ./indir")
+                # Print usage
+                print(usage)
+                # End program and return -1
+                return -1
         # If more another arg is passed but it is not init flag
         else:
             # Print usgae of program
@@ -219,6 +289,8 @@ def main():
             return -1
     # If there are more than 2 argument flags
     elif len(argv) > 2:
+        # Print error
+        print("ERROR: Too many arguments passed")
         # Print usage
         print(usage)
         # End program and return -1
@@ -291,16 +363,11 @@ def main():
     names = np.array(data['filename'])
 
     print("\nSplitting training and testing data")
-    # If loading from a file
-    if load_sdg == True:
-        # Test all the data
-        f_tr = 0
-    # When training a new model
-    else:
-        # Use predefined training fraction
-        f_tr = train_fraction
+    if test_indir == True:
+        testing_data = resize_indir(path_to_indir, width=width)
+        indir_data = [testing_data['data'], testing_data['label']]
     # Split all data into training and testing based on desired ratio
-    X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=f_tr, names=names)
+    X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=f_tr, names=names, test=test_indir, indir_data=indir_data)
 
     # Set up the HOG pipeline for optimized search
     print("\nCreating the HOG pipeline to optimze search")
@@ -317,47 +384,62 @@ def main():
         ('classify', SGDClassifier(random_state=42, max_iter=1000, tol=1e-3))
     ])
 
+    # Set up grid parameters
+    param_grid = [
+    {
+        'hogify__orientations': [8, 9],
+        'hogify__cells_per_block': [(2, 2), (3, 3)],
+        'hogify__pixels_per_cell': [(8, 8), (10, 10), (12, 12)]
+    },
+    {
+        'hogify__orientations': [8],
+        'hogify__cells_per_block': [(3, 3)],
+        'hogify__pixels_per_cell': [(8, 8)],
+        'classify': [
+            SGDClassifier(random_state=42, max_iter=1000, tol=1e-3),
+            svm.SVC(kernel='linear')
+        ]
+    }]
+
+    # Create a grid search with the HOG pipeline
+    print("\nCreating Grid Search framework")
+    grid_search = GridSearchCV(HOG_pipeline, 
+                        param_grid, 
+                        cv=3,
+                        n_jobs=-1,
+                        scoring='accuracy',
+                        verbose=1,
+                        return_train_score=True)
+        
     # If training a new HOG SDG file
     if load_sdg == False:
-        # Generate a Classifier with only the hog pipeline
-        clf = HOG_pipeline.fit(X_train, y_train)
+        # Check if testing indir is true
+        if test_indir == True:
+            # Check if there is a fully trained model
+            if os.path.isfile(full_train_model) == True:
+                print("Reading from fully trained model")
+                grid_res = joblib.load(full_train_model)
+            # If there is not a fully trained model present
+            else:
+                # Train the grid search to find the best descriptors
+                print("Training the grid search\n")
+                # Create the grid search method
+                grid_res = grid_search.fit(X_train, y_train)
+                # Save the fully trained grid model
+                joblib.dump(grid_res, full_train_model)
+        # Make a new model
+        else:
+            # Generate a Classifier with only the hog pipeline
+            clf = HOG_pipeline.fit(X_train, y_train)
 
-        # Generate a prediction with only the HOG Pipeline
-        y_pred_clf = clf.predict(X_test)
-        # Calculate accuracy of Pipeline transform fit
-        clf_accuracy = 100*np.sum(y_pred_clf == y_test)/len(y_test)
-     
-        # Set up grid parameters
-        param_grid = [
-        {
-            'hogify__orientations': [8, 9],
-            'hogify__cells_per_block': [(2, 2), (3, 3)],
-            'hogify__pixels_per_cell': [(8, 8), (10, 10), (12, 12)]
-        },
-        {
-            'hogify__orientations': [8],
-             'hogify__cells_per_block': [(3, 3)],
-             'hogify__pixels_per_cell': [(8, 8)],
-             'classify': [
-                 SGDClassifier(random_state=42, max_iter=1000, tol=1e-3),
-                 svm.SVC(kernel='linear')
-             ]
-        }
-        ]
-
-        # Create a grid search with the HOG pipeline
-        print("\nCreating Grid Search framework")
-        grid_search = GridSearchCV(HOG_pipeline, 
-                               param_grid, 
-                               cv=3,
-                               n_jobs=-1,
-                               scoring='accuracy',
-                               verbose=1,
-                               return_train_score=True)
-     
-        # Train the grid search to find the best descriptors
-        print("Training the grid search\n")
-        grid_res = grid_search.fit(X_train, y_train)
+            # Generate a prediction with only the HOG Pipeline
+            y_pred_clf = clf.predict(X_test)
+            # Calculate accuracy of Pipeline transform fit
+            clf_accuracy = 100*np.sum(y_pred_clf == y_test)/len(y_test)
+        
+            # Train the grid search to find the best descriptors
+            print("Training the grid search\n")
+            grid_res = grid_search.fit(X_train, y_train)
     # If loading from a file
     else:
         print(f"\nReading model from {hog_sdg_filename}...")
@@ -370,99 +452,107 @@ def main():
     # Use the grid search results to predict the dest data
     print("\nUsing best performing descriptors of Grid Search to predict test data")
     y_pred_grid = grid_res.predict(X_test)
-    # Calculate accuracy of grid search
-    grid_accuracy = 100*np.sum(y_pred_grid == y_test)/len(y_test)
-    # If training a new model
-    if load_sdg == False:
-        # Print out the accuracy of the CLF Pipeline fit
-        print(f"\nCLF is {clf_accuracy}% accurate")
-    # Print out the accuracy of the grid search
-    print(f"Grid search is {grid_accuracy}% accurate\n")
 
-    # Only compare accuracies if both are performed when training new models
-    if load_sdg == False:
-        # Compare accuracy of Grid search vs Pipeline transform fit
-        if grid_accuracy > clf_accuracy:
-            # Grid search is more accurate
+    if test_indir == False:
+        # Calculate accuracy of grid search
+        grid_accuracy = 100*np.sum(y_pred_grid == y_test)/len(y_test)
+        # If training a new model
+        if load_sdg == False:
+            # Print out the accuracy of the CLF Pipeline fit
+            print(f"\nCLF is {clf_accuracy}% accurate")
+        # Print out the accuracy of the grid search
+        print(f"Grid search is {grid_accuracy}% accurate\n")
+
+        # Only compare accuracies if both are performed when training new models
+        if load_sdg == False:
+            # Compare accuracy of Grid search vs Pipeline transform fit
+            if grid_accuracy > clf_accuracy:
+                # Grid search is more accurate
+                y_pred = y_pred_grid
+            else:
+                # Pipeline is more accurate
+                y_pred = y_pred_clf
+        # If loading grid model
+        else:
+            # Use the grid model predictions
             y_pred = y_pred_grid
+
+        # Generate the confusion matrix
+        print("Generating confusion matrix")
+        cmx = confusion_matrix(y_test, y_pred)
+        # Plot the confusion matrices
+        plot_confusion_matrix(cmx)
+
+        # Empty list to hold incorrect indexes
+        incorrect_idx = []
+        # Iterate through predicted results
+        for index in range(len(y_pred)):
+            # If the prediction is wrong
+            if y_pred[index] != y_test[index]:
+                # Save the index of incorrect prediction
+                incorrect_idx.append(index)
+
+        # Print the results table
+        print("\nFilename\tTrue Label\tPrediction")
+        for index in range(len(y_pred)):
+            print(f"{names_te[index]}\t{y_test[index]}\t{y_pred[index]}")
+
+        # Output results of the prediction
+        print(f"\nNumber of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
+        print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
+
+        # If there are less than 6 incorrect answers
+        if len(incorrect_idx) <= 6:
+            # Only use those incorrect answers
+            num = len(incorrect_idx)
+            # The chosen indexes should be all the incorrect predictions
+            rand_indices = incorrect_idx
+        # If there are more than 6 incorrect predictions
         else:
-            # Pipeline is more accurate
-            y_pred = y_pred_clf
-    # If loading grid model
+            # Only allow for 6 to be displayed
+            num = 6
+            # Choose 6 random indices from list of incorrect indices
+            rand_indices = np.random.choice(incorrect_idx, size=num, replace=False)
+
+        # If there are no incorrect answers
+        if num != 0:
+            # Set up the matplotlib figure and axes, based on the number of labels
+            fig2, axes2 = plt.subplots(1, num)
+            fig2.suptitle(f"{num} incorrect predictions from testing data")
+            fig2.set_size_inches(14,4)
+            fig2.tight_layout()
+
+            # If there is only 1 axis
+            if num == 1:
+                # Turn it into a list
+                axes_list = [axes2]
+            # If there are more than 1 axes
+            else:
+                # Use the pregenerated list
+                axes_list = axes2
+
+            # Iterate over each axis and index
+            for ax, idx in zip(axes_list, rand_indices):
+                # Display the image
+                ax.imshow(X_test[idx])
+                # Format the graph title
+                ax.set_title(f"This is {y_pred[idx]}")
+                # Turn off axis tick markers
+                ax.set_xticks([])
+                ax.set_yticks([])
+                # Set the X Label to the filename
+                ax.set_xlabel(f"{names_te[idx]}")
+            # Show the plot and wait for user to close it
+            plt.show()
+    # If testing from indir
     else:
-        # Use the grid model predictions
-        y_pred = y_pred_grid
-
-    # Generate the confusion matrix
-    print("Generating confusion matrix")
-    cmx = confusion_matrix(y_test, y_pred)
-    # Plot the confusion matrices
-    plot_confusion_matrix(cmx)
-
-    # Empty list to hold incorrect indexes
-    incorrect_idx = []
-    # Iterate through predicted results
-    for index in range(len(y_pred)):
-        # If the prediction is wrong
-        if y_pred[index] != y_test[index]:
-            # Save the index of incorrect prediction
-            incorrect_idx.append(index)
-
-    # Print the results table
-    print("\nFilename\tTrue Label\tPrediction")
-    for index in range(len(y_pred)):
-        print(f"{names_te[index]}\t{y_test[index]}\t{y_pred[index]}")
-
-    # Output results of the prediction
-    print(f"\nNumber of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
-    print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
-
-    # If there are less than 6 incorrect answers
-    if len(incorrect_idx) <= 6:
-        # Only use those incorrect answers
-        num = len(incorrect_idx)
-        # The chosen indexes should be all the incorrect predictions
-        rand_indices = incorrect_idx
-    # If there are more than 6 incorrect predictions
-    else:
-        # Only allow for 6 to be displayed
-        num = 6
-        # Choose 6 random indices from list of incorrect indices
-        rand_indices = np.random.choice(incorrect_idx, size=num, replace=False)
-
-    # If there are no incorrect answers
-    if num != 0:
-        # Set up the matplotlib figure and axes, based on the number of labels
-        fig2, axes2 = plt.subplots(1, num)
-        fig2.suptitle(f"{num} incorrect predictions from testing data")
-        fig2.set_size_inches(14,4)
-        fig2.tight_layout()
-
-        # If there is only 1 axis
-        if num == 1:
-            # Turn it into a list
-            axes_list = [axes2]
-        # If there are more than 1 axes
-        else:
-            # Use the pregenerated list
-            axes_list = axes2
-
-        # Iterate over each axis and index
-        for ax, idx in zip(axes_list, rand_indices):
-            # Display the image
-            ax.imshow(X_test[idx])
-            # Format the graph title
-            ax.set_title(f"This is {y_pred[idx]}")
-            # Turn off axis tick markers
-            ax.set_xticks([])
-            ax.set_yticks([])
-            # Set the X Label to the filename
-            ax.set_xlabel(f"{names_te[idx]}")
-        # Show the plot and wait for user to close it
-        plt.show()
+        print("HOG SGD Model Predictions:\n")
+        print("Filename\tPrediction")
+        for index in range(len(X_test)):
+            print(f"{testing_data['filename'][index]}\t{y_pred_grid[index]}")
 
     # If it trained a new sdg model
-    if load_sdg == False:
+    if load_sdg == False and test_indir == False:
         # Prompt user to save it
         if get_answer(f"Save HOG SDG model as {hog_sdg_filename}? (Y/N)", ['y','n']) == 'y':
             print("Saving HOG SDG model to .pkl file")
