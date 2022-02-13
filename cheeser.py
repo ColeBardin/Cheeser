@@ -120,7 +120,7 @@ def resize_all(src, pklname, include, width=150, height=None):
                     # Resize it with the specified format
                     im = resize(im, (width, height)) #[:,:,::-1]
                     # Add entry of label to subdirectory
-                    data['label'].append(subdir[:-4])
+                    data['label'].append(subdir)
                     # Add filename entry
                     data['filename'].append(file)
                     # Append the image data to the dictionary
@@ -219,6 +219,7 @@ def get_answer(message, targets):
     return get_answer(message, targets)
 
 def main():
+    print("\nCheesing...\n")
     # Base name of .pkl file
     base_name = 'cheese_or_not'
     # Desired image width after resize
@@ -242,6 +243,7 @@ def main():
     if len(argv) == 2:
         # Validate init flag
         if argv[1] == 'init':
+            print("Initializing data file\n")
             # Create path to data directories
             data_path = os.path.join("data")
             # Subdirectories of data to include
@@ -261,6 +263,7 @@ def main():
             f_tr = 0
         # If testing from indir flag is given
         elif argv[1] == 'test':
+            print("Testing from indir\n")
             # Enable testing
             test_indir = True
             # Train with all the given data
@@ -295,9 +298,6 @@ def main():
         print(usage)
         # End program and return -1
         return -1
-
-    print("Cheesing...\n")
- 
     # Validate if .pkl file exists
     if os.path.isfile(f'{base_name}_{width}x{width}px.pkl'):
         print(f"Loading {base_name}_{width}x{width}px.pkl...\n")
@@ -309,11 +309,6 @@ def main():
         print("Cannot find .pkl data file")
         # End program with status -1
         return -1
- 
-    # Iterate over each data entry
-    for index in range(len(data['label'])):
-        # Fix truncated label due to np.unique
-        data['label'][index] = data['label'][index] + 'eese'
 
     # Print data informatgion
     print('number of samples: ', len(data['data']))
@@ -364,10 +359,18 @@ def main():
     y = np.array(data['label'])
     names = np.array(data['filename'])
 
-    print("\nSplitting training and testing data")
+    # If testing indir data
     if test_indir == True:
+        print("\nReading images from ./indir")
+        # Read images
         testing_data = resize_indir(path_to_indir, width=width)
+        # Split indir data
         indir_data = [testing_data['data'], testing_data['label']]
+    # If not testing indir data
+    else:
+        # Pass None
+        indir_data = None
+    print("\nSplitting training and testing data")
     # Split all data into training and testing based on desired ratio
     X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=f_tr, names=names, test=test_indir, indir_data=indir_data)
 
@@ -404,7 +407,7 @@ def main():
     }]
 
     # Create a grid search with the HOG pipeline
-    print("\nCreating Grid Search framework")
+    print("\nCreating Grid Search framework\n")
     grid_search = GridSearchCV(HOG_pipeline, 
                         param_grid, 
                         cv=3,
@@ -419,18 +422,20 @@ def main():
         if test_indir == True:
             # Check if there is a fully trained model
             if os.path.isfile(full_train_model) == True:
-                print("Reading from fully trained model")
+                print("Reading from fully trained model\n")
                 grid_res = joblib.load(full_train_model)
             # If there is not a fully trained model present
             else:
                 # Train the grid search to find the best descriptors
-                print("Training the grid search\n")
+                print("Generating new fully trained grid search")
                 # Create the grid search method
                 grid_res = grid_search.fit(X_train, y_train)
                 # Save the fully trained grid model
                 joblib.dump(grid_res, full_train_model)
+                print(f"New fully trained model saved as {full_train_model}\n")
         # Make a new model
         else:
+            print("Training CLF\n")
             # Generate a Classifier with only the hog pipeline
             clf = HOG_pipeline.fit(X_train, y_train)
 
@@ -444,7 +449,7 @@ def main():
             grid_res = grid_search.fit(X_train, y_train)
     # If loading from a file
     else:
-        print(f"\nReading model from {hog_sdg_filename}...")
+        print(f"Reading model from {hog_sdg_filename}...\n")
         # Load the file
         grid_res = joblib.load(hog_sdg_filename)
 
@@ -452,7 +457,7 @@ def main():
     #print(grid_res.best_estimator_)
 
     # Use the grid search results to predict the dest data
-    print("\nUsing best performing descriptors of Grid Search to predict test data")
+    print("Using best performing descriptors of Grid Search to predict test data\n")
     y_pred_grid = grid_res.predict(X_test)
 
     # When not testing from indir
@@ -462,7 +467,7 @@ def main():
         # If training a new model
         if load_sdg == False:
             # Print out the accuracy of the CLF Pipeline fit
-            print(f"\nCLF is {clf_accuracy}% accurate")
+            print(f"CLF is {clf_accuracy}% accurate\n")
         # Print out the accuracy of the grid search
         print(f"Grid search is {grid_accuracy}% accurate\n")
 
@@ -481,7 +486,7 @@ def main():
             y_pred = y_pred_grid
 
         # Generate the confusion matrix
-        print("Generating confusion matrix")
+        print("Generating confusion matrix\n")
         cmx = confusion_matrix(y_test, y_pred)
         # Plot the confusion matrices
         plot_confusion_matrix(cmx)
@@ -502,7 +507,7 @@ def main():
 
         # Output results of the prediction
         print(f"\nNumber of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
-        print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test))
+        print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test),'\n')
 
         # If there are less than 6 incorrect answers
         if len(incorrect_idx) <= 6:
@@ -555,6 +560,42 @@ def main():
         for index in range(len(X_test)):
             # Print file and prediction
             print(f"{testing_data['filename'][index]}\t{y_pred_grid[index]}")
+   
+        number_of_tests = len(os.listdir(path_to_indir))
+        if number_of_tests >= 6:
+            num2 = 6
+        else:
+            num2 = number_of_tests
+        
+        fig3, axes3 = plt.subplots(1, num2)
+        fig3.suptitle(f"{num2} predictions from ./indir testing images")
+        fig3.set_size_inches(14,4)
+        fig3.tight_layout()
+
+        # If there is only 1 axis
+        if num2 == 1:
+            # Turn it into a list
+            axes_list2 = [axes3]
+        # If there are more than 1 axes
+        else:
+            # Use the pregenerated list
+            axes_list2 = axes3
+
+        rand_indices = np.random.choice(range(number_of_tests), size=num2, replace=False)
+        # Iterate over each axis and index
+        for ax, idx in zip(axes_list2, rand_indices):
+            # Display the image
+            ax.imshow(testing_data['data'][idx])
+            # Format the graph title
+            ax.set_title(f"This is {y_pred_grid[idx]}")
+            # Turn off axis tick markers
+            ax.set_xticks([])
+            ax.set_yticks([])
+            # Set the X Label to the filename
+            filename = 'filename'
+            ax.set_xlabel(f"{testing_data[filename][idx]}")
+        # Show the plot and wait for user to close it
+        plt.show()
 
     # If it trained a new sdg model
     if load_sdg == False and test_indir == False:
