@@ -572,6 +572,7 @@ def main():
             # Number is the amount of testing files
             num = number_of_tests
         
+        # Set up the matplotlib figure and axes, based on the number of labels
         fig3, axes3 = plt.subplots(1, num)
         fig3.suptitle(f"{num} predictions from ./indir testing images")
         fig3.set_size_inches(14,4)
