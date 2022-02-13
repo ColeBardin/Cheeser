@@ -562,7 +562,14 @@ def main():
             print(f"{testing_data['filename'][index]}\t{y_pred_grid[index]}")
    
         # Get the amount of files being tested
-        number_of_tests = len(os.listdir(path_to_indir))
+        number_of_tests = 0
+        # Iterate over each file in indir
+        for file in os.listdir(path_to_indir):
+            # If the file is not .DS_Store 
+            if file.lower() != '.ds_store':
+                # Increment the count
+                number_of_tests += 1
+
         # If there are more than 6 testing images
         if number_of_tests > 6:
             # Number is 6
