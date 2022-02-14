@@ -380,7 +380,7 @@ def main():
     # When not loading SGD model from file
     if state != 'load':    
         # Set up the HOG pipeline for optimized search
-        print("\nCreating the HOG pipeline to optimze search")
+        print("Creating the HOG pipeline to optimze search\n")
         HOG_pipeline = Pipeline([
             # Transformers
             ('grayify', RGB2GrayTransformer()),
@@ -412,7 +412,7 @@ def main():
         }]
 
         # Create a grid search with the HOG pipeline
-        print("\nCreating Grid Search framework\n")
+        print("Creating Grid Search framework\n")
         grid_search = GridSearchCV(HOG_pipeline, 
                             param_grid, 
                             cv=3,
@@ -420,6 +420,7 @@ def main():
                             scoring='accuracy',
                             verbose=1,
                             return_train_score=True)
+
     # For loading SGD model
     if state == 'load':
         print(f"Reading model from {hog_sgd_filename}...\n")
