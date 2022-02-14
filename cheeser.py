@@ -456,6 +456,8 @@ def main():
         # Train the grid search to find the best descriptors
         print("Training the grid search...\n")
         grid_res = grid_search.fit(X_train, y_train) 
+        # Print newline
+        print('')
 
     # Print description of best performing object
     #print(grid_res.best_estimator_)
