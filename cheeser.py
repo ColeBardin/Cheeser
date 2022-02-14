@@ -314,7 +314,7 @@ def main():
     print('keys: ', list(data.keys()))
     print('description: ', data['description'])
     print('image shape: ', data['data'][0].shape)
-    print('labels:', np.unique(data['label']))
+    print('labels:', np.unique(data['label']),'\n')
  
     # Make counter dict of data
     Counter(data['label'])
@@ -373,51 +373,53 @@ def main():
         indir_data = None
         # Set testing indir to be false
         test_indir = False
-    print("\nSplitting training and testing data")
+    print("Splitting training and testing data\n")
     # Split all data into training and testing based on desired ratio
     X_train, X_test, y_train, y_test, names_te = get_train_test(X=X, y=y, f_tr=f_tr, names=names, test=test_indir, indir_data=indir_data)
 
-    # Set up the HOG pipeline for optimized search
-    print("\nCreating the HOG pipeline to optimze search")
-    HOG_pipeline = Pipeline([
-        # Transformers
-        ('grayify', RGB2GrayTransformer()),
-        ('hogify', HogTransformer(
-            pixels_per_cell=(14, 14), 
-            cells_per_block=(2, 2), 
-            orientations=9, 
-            block_norm='L2-Hys')
-        ),
-        ('scalify', StandardScaler()),
-        ('classify', SGDClassifier(random_state=42, max_iter=1000, tol=1e-3))
-    ])
+    # When not loading SGD model from file
+    if state != 'load':    
+        # Set up the HOG pipeline for optimized search
+        print("\nCreating the HOG pipeline to optimze search")
+        HOG_pipeline = Pipeline([
+            # Transformers
+            ('grayify', RGB2GrayTransformer()),
+            ('hogify', HogTransformer(
+                pixels_per_cell=(14, 14), 
+                cells_per_block=(2, 2), 
+                orientations=9, 
+                block_norm='L2-Hys')
+            ),
+            ('scalify', StandardScaler()),
+            ('classify', SGDClassifier(random_state=42, max_iter=1000, tol=1e-3))
+        ])
 
-    # Set up grid parameters
-    param_grid = [
-    {
-        'hogify__orientations': [8, 9],
-        'hogify__cells_per_block': [(2, 2), (3, 3)],
-        'hogify__pixels_per_cell': [(8, 8), (10, 10), (12, 12)]
-    },
-    {
-        'hogify__orientations': [8],
-        'hogify__cells_per_block': [(3, 3)],
-        'hogify__pixels_per_cell': [(8, 8)],
-        'classify': [
-            SGDClassifier(random_state=42, max_iter=1000, tol=1e-3),
-            svm.SVC(kernel='linear')
-        ]
-    }]
+        # Set up grid parameters
+        param_grid = [
+        {
+            'hogify__orientations': [8, 9],
+            'hogify__cells_per_block': [(2, 2), (3, 3)],
+            'hogify__pixels_per_cell': [(8, 8), (10, 10), (12, 12)]
+        },
+        {
+            'hogify__orientations': [8],
+            'hogify__cells_per_block': [(3, 3)],
+            'hogify__pixels_per_cell': [(8, 8)],
+            'classify': [
+                SGDClassifier(random_state=42, max_iter=1000, tol=1e-3),
+                svm.SVC(kernel='linear')
+            ]
+        }]
 
-    # Create a grid search with the HOG pipeline
-    print("\nCreating Grid Search framework\n")
-    grid_search = GridSearchCV(HOG_pipeline, 
-                        param_grid, 
-                        cv=3,
-                        n_jobs=-1,
-                        scoring='accuracy',
-                        verbose=1,
-                        return_train_score=True)
+        # Create a grid search with the HOG pipeline
+        print("\nCreating Grid Search framework\n")
+        grid_search = GridSearchCV(HOG_pipeline, 
+                            param_grid, 
+                            cv=3,
+                            n_jobs=-1,
+                            scoring='accuracy',
+                            verbose=1,
+                            return_train_score=True)
     # For loading SGD model
     if state == 'load':
         print(f"Reading model from {hog_sgd_filename}...\n")
@@ -555,11 +557,15 @@ def main():
 
         # Print the results table
         print("\nFilename\tTrue Label\tPrediction")
+        # Iterate over each testing result
         for index in range(len(y_pred)):
+            # Print out the filename, true label, and the SGD model prediction
             print(f"{names_te[index]}\t{y_test[index]}\t{y_pred[index]}")
+        # Print a newline
+        print('')
 
         # Output results of the prediction
-        print(f"\nNumber of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
+        print(f"Number of incorrect predictions: {len(incorrect_idx)} out of {len(y_pred)} examples")
         print('Percentage correct: ', 100*np.sum(y_pred == y_test)/len(y_test),'\n')
 
         # If there are less than 6 incorrect answers
