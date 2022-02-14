@@ -125,8 +125,10 @@ def resize_all(src, pklname, include, width=150, height=None):
                     data['filename'].append(file)
                     # Append the image data to the dictionary
                     data['data'].append(im)
-        # Create a .pkl file to store image data for later reference
-        joblib.dump(data, pklname)
+    # Print a newline
+    print('')
+    # Create a .pkl file to store image data for later reference
+    joblib.dump(data, pklname)
 
 # Method to plot the confusion matrices
 def plot_confusion_matrix(cmx, vmax1=None, vmax2=None, vmax3=None):
