@@ -56,7 +56,7 @@ def resize_indir(src, width=150, height=None):
     # Create empty dictionary
     testing = dict()
     # Set the description
-    testing['description'] = 'resized ({0}x{1}) testing data from ./ir in rgb'.format(int(width), int(height))
+    testing['description'] = 'resized ({0}x{1}) testing data from indir\\ in rgb'.format(int(width), int(height))
     # Initialize empty values for the keys label, filename and data
     testing['label'] = []
     testing['filename'] = []
@@ -251,13 +251,13 @@ def main():
             # Search for training data subdirectory
             if os.path.isdir(data_path) == False:
                 # Print error
-                print("ERROR: Cannot find data/ directory\n")
+                print("ERROR: Cannot find data\\ directory\n")
                 # End program and return status of -1
                 return -1
             # Check if there are subdirectories of data within data/
             elif len(os.listdir(data_path)) == 0:
                 # Print error
-                print("ERROR: data/ subdirectory is empty\n")
+                print("ERROR: data\\ subdirectory is empty\n")
                 # End program and return status of -1
                 return -1
             # Subdirectories of data to include
@@ -282,7 +282,7 @@ def main():
             f_tr = 0
         # If testing from indir flag is given
         elif argv[1] == 'test':
-            print("Testing from indir/\n")
+            print("Testing from indir\\\n")
             # Enable testing
             state = 'test'
             # Train with all the given data
@@ -290,7 +290,7 @@ def main():
             # Check if indir exists
             if os.path.isdir(path_to_indir) == False:
                 # Print error
-                print("ERROR: Cannot find indir/")
+                print("ERROR: Cannot find indir\\")
                 # Print usage
                 print(usage)
                 # End program and return -1
@@ -298,7 +298,7 @@ def main():
             # Check if there are files in indir
             elif len(os.listdir(path_to_indir)) == 0:
                 # Print error
-                print("ERROR: No files in indir/")
+                print("ERROR: No files in indir\\")
                 # Print usage
                 print(usage)
                 # End program and return -1
@@ -380,7 +380,7 @@ def main():
 
     # If testing indir data
     if state == 'test':
-        print("\nReading images from indir/")
+        print("\nReading images from indir\\")
         # Read images
         testing_data = resize_indir(path_to_indir, width=width)
         # Split indir data
@@ -513,7 +513,7 @@ def main():
         
         # Set up the matplotlib figure and axes, based on the number of labels
         fig3, axes3 = plt.subplots(1, num)
-        fig3.suptitle(f"{num} predictions from indir/ testing images")
+        fig3.suptitle(f"{num} predictions from indir\\ testing images")
         fig3.set_size_inches(14,4)
         fig3.tight_layout()
 
