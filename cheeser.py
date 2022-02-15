@@ -223,6 +223,7 @@ def get_answer(message, targets):
 # Method to create GridSearch and use it to get grid_res
 def get_grid_res(X_train, y_train):
     # Get the HOG Pipeline
+    print("Creating the HOG pipeline to optimze search\n")
     HOG_pipeline = get_HOG_pipeline()
     # Set up grid parameters
     param_grid = [
@@ -254,7 +255,6 @@ def get_grid_res(X_train, y_train):
 
 def get_HOG_pipeline():
     # Set up the HOG pipeline for optimized search
-    print("Creating the HOG pipeline to optimze search\n")
     HOG_pipeline = Pipeline([
         # Transformers
         ('grayify', RGB2GrayTransformer()),
@@ -430,7 +430,7 @@ def main():
 
     # If testing indir data
     if state == 'test':
-        print("\nReading images from indir\\")
+        print("Reading images from indir\\\n")
         # Read images
         testing_data = resize_indir(path_to_indir, width=width)
         # Split indir data
@@ -450,8 +450,16 @@ def main():
     # For loading SGD model
     if state == 'load':
         print(f"Reading model from {hog_sgd_filename}...\n")
-        # Load the file
-        grid_res = joblib.load(hog_sgd_filename)
+        # Check to see if file exists
+        if os.path.isfile(hog_sgd_filename) == True:
+            # Load the file
+            grid_res = joblib.load(hog_sgd_filename)
+        # If not
+        else:
+            # Print error
+            print(f"ERROR: Cannot find {hog_sgd_filename} to load from")
+            # End program and return -1
+            return -1
     # For testing indir data
     elif state == 'test':
         print("Searching for fully trained model...\n")
@@ -481,8 +489,6 @@ def main():
         # Train the grid search to find the best descriptors
         grid_res = get_grid_res(X_train, y_train) 
         print("Training the grid search...\n")
-        # Print newline
-        print('')
 
     # Print description of best performing object
     #print(grid_res.best_estimator_)
