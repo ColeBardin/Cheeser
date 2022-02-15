@@ -26,20 +26,20 @@ Specifying no flags will split the data from `data\` to 90% for training and 10%
 
 ### cheeser.py:
 
-[Numpy](https://pypi.org/project/numpy/)
-
 [Matplotlib](https://pypi.org/project/matplotlib/)
 
 [Joblib](https://pypi.org/project/joblib/)
 
+[Numpy](https://pypi.org/project/numpy/)
+
 [Scikit-Learn](https://pypi.org/project/scikit-learn/)
 
-[Scikit-Image](https://github.com/ColeBardin/Cheeser.git)
+[Scikit-Image](https://pypi.org/project/scikit-image/)
 
 ### transformer_classes.py:
 
+[Numpy](https://pypi.org/project/numpy/)
+
 [Scikit-Learn](https://pypi.org/project/scikit-learn/)
 
-[Scikit-Image](https://github.com/ColeBardin/Cheeser.git)
-
-[Numpy](https://pypi.org/project/numpy/)
+[Scikit-Image](https://pypi.org/project/scikit-image/)
