@@ -252,6 +252,7 @@ def get_grid_res(X_train, y_train):
     # Create the grid search method
     return grid_search.fit(X_train, y_train)
 
+# Method to generate and get a HOG pipeline
 def get_HOG_pipeline():
     # Set up the HOG pipeline for optimized search
     HOG_pipeline = Pipeline([
