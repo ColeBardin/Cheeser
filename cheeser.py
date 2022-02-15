@@ -248,6 +248,12 @@ def main():
             state = 'init'
             # Create path to data directories
             data_path = os.path.join("data")
+            # Search for training data subdirectory
+            if os.path.isdir(data_path) == False:
+                # Print error
+                print("ERROR: Cannot find data/ directory\n")
+                # End program and return status of -1
+                return -1
             # Subdirectories of data to include
             include = {'Cheese', 'NotCheese'}
             # Check if the .pkl file exists already
