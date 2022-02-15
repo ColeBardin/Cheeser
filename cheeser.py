@@ -12,6 +12,7 @@ from sklearn.model_selection import cross_val_predict, GridSearchCV
 from sklearn.preprocessing import StandardScaler, Normalizer
 from sklearn.metrics import confusion_matrix
 from sklearn.pipeline import Pipeline
+from sklearn.ensemble import AdaBoostRegressor
 from sklearn import svm
 from collections import Counter
 from random import randint
@@ -245,7 +246,7 @@ def get_grid_res(X_train, y_train):
     print("Creating Grid Search framework\n")
     grid_search = GridSearchCV(HOG_pipeline, 
                     param_grid, 
-                    cv=10,
+                    cv=6,
                     n_jobs=-1,
                     scoring='accuracy',
                     verbose=1,
@@ -490,12 +491,14 @@ def main():
         grid_res = get_grid_res(X_train, y_train) 
         print("Training the grid search...\n")
 
-    # Print description of best performing object
-    #print(grid_res.best_estimator_)
+    # Get the best estimatation from the grid results
+    best_estim = grid_res.best_estimator_
+    # Train the best estimation
+    best_estim.fit(X_train, y_train)
 
     # Use the grid search results to predict the dest data
     print("Using best performing descriptors of Grid Search to predict test data...\n")
-    y_pred_grid = grid_res.predict(X_test)
+    y_pred_grid = best_estim.predict(X_test)
 
     # When testing from indir
     if state == 'test':
