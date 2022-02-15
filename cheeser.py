@@ -270,6 +270,7 @@ def get_HOG_pipeline():
     # Return the final pipeline
     return HOG_pipeline
 
+# Main program function
 def main():
     print("\nCheesing...\n")
     # Base name of .pkl file
