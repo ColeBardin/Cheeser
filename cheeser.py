@@ -280,14 +280,14 @@ def main():
     usage = 'Usage: py cheeser.py [init|load|test]'
     # Variable for HOG SGD filename
     hog_sgd_filename = 'hog_sgd_model.pkl'
-    # Define the fraction of data to be trained with
-    f_tr = 0.9
-    # Variable to hold path to indir
-    path_to_indir = 'indir'
     # Variable to hold fully trained model
     full_train_model = 'full_train_model.pkl'
+    # Variable to hold path to indir
+    path_to_indir = 'indir'
     # Variable to store the state
     state = None
+    # Define the fraction of data to be trained with
+    f_tr = 0.9
 
     # Check for number of arguments passed
     if len(argv) == 2:
