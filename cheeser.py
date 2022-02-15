@@ -210,8 +210,6 @@ def plot_confusion_matrix(cmx, vmax1=None, vmax2=None, vmax3=None):
 def get_answer(message, targets):
     # Prompt user
     answer = input(message)
-    # Output response
-    print(answer)
     # Check if response is in target answers
     for target in targets:
         # If there is a match
@@ -648,7 +646,7 @@ def main():
         # If it trained a new partial sgd model
         if state != 'load':
             # Prompt user to save it
-            if get_answer(f"Save HOG SGD model as {hog_sgd_filename}? (Y/N)", ['y','n']) == 'y':
+            if get_answer(f"Save HOG SGD model as {hog_sgd_filename}? (Y/N)\n", ['y','n']) == 'y':
                 print("Saving HOG SGD model to .pkl file")
                 # Dump the data into a .pkl file
                 joblib.dump(grid_res, hog_sgd_filename)
