@@ -289,6 +289,8 @@ def main():
     state = None
     # Define the fraction of data to be trained with
     f_tr = 0.9
+    # Set to True to print out examples of the data images
+    print_examples = False
 
     # Check for number of arguments passed
     if len(argv) == 2:
@@ -392,9 +394,6 @@ def main():
     
     # Use np.unique to get all unique values in the list of labels
     labels = np.unique(data['label']) 
-
-    # Set to True to print out examples of the data images
-    print_examples = False
 
     # If the data examples should be printed
     if print_examples == True:
