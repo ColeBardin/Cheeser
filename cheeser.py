@@ -254,6 +254,12 @@ def main():
                 print("ERROR: Cannot find data/ directory\n")
                 # End program and return status of -1
                 return -1
+            # Check if there are subdirectories of data within data/
+            elif len(os.listdir(data_path)) == 0:
+                # Print error
+                print("ERROR: data/ subdirectory is empty\n")
+                # End program and return status of -1
+                return -1
             # Subdirectories of data to include
             include = {'Cheese', 'NotCheese'}
             # Check if the .pkl file exists already
