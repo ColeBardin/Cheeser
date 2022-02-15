@@ -250,11 +250,11 @@ def main():
             data_path = os.path.join("data")
             # Subdirectories of data to include
             include = {'Cheese', 'NotCheese'}
-            print("Reading and resizing all the data images...")
             # Check if the .pkl file exists already
             if os.path.isfile(f'{base_name}_{width}x{width}px.pkl'):
                 # If it does, delete it
                 os.remove(f'{base_name}_{width}x{width}px.pkl')
+            print("Reading and resizing all the data images...")
             # Make new .pkl file with the data path, filename, resize width and included subdirectories
             resize_all(src=data_path, pklname=base_name, width=width, include=include)
             # If there is a fully trained model
