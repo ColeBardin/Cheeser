@@ -245,7 +245,7 @@ def get_grid_res(X_train, y_train):
     print("Creating Grid Search framework\n")
     grid_search = GridSearchCV(HOG_pipeline, 
                     param_grid, 
-                    cv=5,
+                    cv=10,
                     n_jobs=-1,
                     scoring='accuracy',
                     verbose=1,
