@@ -261,6 +261,7 @@ def main():
             if os.path.isfile(full_train_model):
                 # Remove the fully trained model since there are new photos to train
                 os.remove(full_train_model)
+                print("Deleting previous fully trained model\n")
         # If load flag is given
         elif argv[1] == 'load':
             # Enable loading sgd file instead of training new model
