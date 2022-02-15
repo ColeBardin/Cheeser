@@ -246,10 +246,11 @@ def get_grid_res(X_train, y_train):
     print("Creating Grid Search framework\n")
     grid_search = GridSearchCV(HOG_pipeline, 
                     param_grid, 
-                    cv=6,
+                    cv=10,
                     n_jobs=-1,
                     scoring='accuracy',
                     verbose=1,
+                    error_score='raise',
                     return_train_score=True)
     # Create the grid search method
     return grid_search.fit(X_train, y_train)
@@ -491,14 +492,9 @@ def main():
         grid_res = get_grid_res(X_train, y_train) 
         print("Training the grid search...\n")
 
-    # Get the best estimatation from the grid results
-    best_estim = grid_res.best_estimator_
-    # Train the best estimation
-    best_estim.fit(X_train, y_train)
-
     # Use the grid search results to predict the dest data
     print("Using best performing descriptors of Grid Search to predict test data...\n")
-    y_pred_grid = best_estim.predict(X_test)
+    y_pred_grid = grid_res.predict(X_test)
 
     # When testing from indir
     if state == 'test':
