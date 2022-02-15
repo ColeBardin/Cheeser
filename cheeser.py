@@ -140,70 +140,70 @@ def plot_confusion_matrix(cmx, vmax1=None, vmax2=None, vmax3=None):
     np.fill_diagonal(cmx_zero_diag, 0)
  
     # Create figure with 3 subplots
-    cmx_fig, cmx_ax = plt.subplots(ncols=3)
+    fig_cmx, axes_cmx = plt.subplots(ncols=3)
     # Set figure title
-    cmx_fig.suptitle("Confusion Matrices")
+    fig_cmx.suptitle("Confusion Matrices")
     # Set the figure size
-    cmx_fig.set_size_inches(12, 4)
+    fig_cmx.set_size_inches(12, 4)
     # Add axis tick markers based on amount of incoming data
-    [a.set_xticks(range(len(cmx)+1)) for a in cmx_ax]
-    [a.set_yticks(range(len(cmx)+1)) for a in cmx_ax]
+    [a.set_xticks(range(len(cmx)+1)) for a in axes_cmx]
+    [a.set_yticks(range(len(cmx)+1)) for a in axes_cmx]
          
     # Count confusion matrix
-    im1 = cmx_ax[0].imshow(cmx, vmax=vmax1)
+    im1 = axes_cmx[0].imshow(cmx, vmax=vmax1)
     # Set subplot title
-    cmx_ax[0].set_title('Count')
+    axes_cmx[0].set_title('Count')
     # Set subplot X label
-    cmx_ax[0].set_xlabel("Predicted")
+    axes_cmx[0].set_xlabel("Predicted")
     # Set subplot Y label
-    cmx_ax[0].set_ylabel("True Label")
+    axes_cmx[0].set_ylabel("True Label")
     # Set X axis tick markers
-    cmx_ax[0].set_xticklabels(['Cheese','NotCheese',''])
+    axes_cmx[0].set_xticklabels(['Cheese','NotCheese',''])
     # Set Y axis tick markers
-    cmx_ax[0].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
+    axes_cmx[0].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
 
     # Percentage confusion matrix
-    im2 = cmx_ax[1].imshow(cmx_norm, vmax=vmax2)
+    im2 = axes_cmx[1].imshow(cmx_norm, vmax=vmax2)
     # Set subplot title
-    cmx_ax[1].set_title('Percentage')
+    axes_cmx[1].set_title('Percentage')
     # Set X label
-    cmx_ax[1].set_xlabel("Predicted")
+    axes_cmx[1].set_xlabel("Predicted")
     # Set Y label
-    cmx_ax[1].set_ylabel("True Label")
+    axes_cmx[1].set_ylabel("True Label")
     # Set X axis tick markers
-    cmx_ax[1].set_xticklabels(['Cheese','NotCheese',''])
+    axes_cmx[1].set_xticklabels(['Cheese','NotCheese',''])
     # Set Y axis tick markers
-    cmx_ax[1].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
+    axes_cmx[1].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
 
     # % and 0 Diagonal confusion matrix
-    im3 = cmx_ax[2].imshow(cmx_zero_diag, vmax=vmax3)
+    im3 = axes_cmx[2].imshow(cmx_zero_diag, vmax=vmax3)
     # Set the subplot title
-    cmx_ax[2].set_title('% and 0 diagonal')
+    axes_cmx[2].set_title('% and 0 diagonal')
     # Set X label
-    cmx_ax[2].set_xlabel("Predicted")
+    axes_cmx[2].set_xlabel("Predicted")
     # Set Y label
-    cmx_ax[2].set_ylabel("True Label")
+    axes_cmx[2].set_ylabel("True Label")
     # Set X tick markers
-    cmx_ax[2].set_xticklabels(['Cheese','NotCheese',''])
+    axes_cmx[2].set_xticklabels(['Cheese','NotCheese',''])
     # Set Y tick markers
-    cmx_ax[2].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
+    axes_cmx[2].set_yticklabels(labels=['Cheese','NotCheese',''], rotation=45)
  
     # Create dividers between the subplots
-    dividers = [make_axes_locatable(a) for a in cmx_ax]
+    dividers = [make_axes_locatable(a) for a in axes_cmx]
     # Size and fit the axis with the padding
     cax1, cax2, cax3 = [divider.append_axes("right", size="5%", pad=0.1) 
                         for divider in dividers]
  
     # Add color bars to each of the axis with their ranges
-    cmx_fig.colorbar(im1, cax=cax1)
-    cmx_fig.colorbar(im2, cax=cax2)
-    cmx_fig.colorbar(im3, cax=cax3)
+    fig_cmx.colorbar(im1, cax=cax1)
+    fig_cmx.colorbar(im2, cax=cax2)
+    fig_cmx.colorbar(im3, cax=cax3)
     # Enable tight layout
-    cmx_fig.tight_layout()
+    fig_cmx.tight_layout()
     # Uncomment plt.show() to have program wait until confusion matrix and data examples are closed
     #plt.show()
-    cmx_ax[0].set_xlabel("Predicted")
-    cmx_ax[0].set_ylabel("True Label")
+    axes_cmx[0].set_xlabel("Predicted")
+    axes_cmx[0].set_ylabel("True Label")
 
 # Method to get target answer from the question
 def get_answer(message, targets):
@@ -522,19 +522,19 @@ def main():
             num = number_of_tests
         
         # Set up the matplotlib figure and axes, based on the number of labels
-        fig3, axes3 = plt.subplots(1, num)
-        fig3.suptitle(f"{num} predictions from indir\\ testing images")
-        fig3.set_size_inches(14,4)
-        fig3.tight_layout()
+        fig_test, axes_test = plt.subplots(1, num)
+        fig_test.suptitle(f"{num} predictions from indir\\ testing images")
+        fig_test.set_size_inches(14,4)
+        fig_test.tight_layout()
 
         # If there is only 1 axis
         if num == 1:
             # Turn it into a list
-            axes_list = [axes3]
+            axes_list = [axes_test]
         # If there are more than 1 axes
         else:
             # Use the pregenerated list
-            axes_list = axes3
+            axes_list = axes_test
 
         # Generate random indices of the predictions
         rand_indices = np.random.choice(range(number_of_tests), size=num, replace=False)
@@ -616,19 +616,19 @@ def main():
          # If there are no incorrect answers
         if num != 0:
             # Set up the matplotlib figure and axes, based on the number of labels
-            fig2, axes2 = plt.subplots(1, num)
-            fig2.suptitle(f"{num} incorrect predictions from testing data")
-            fig2.set_size_inches(14,4)
-            fig2.tight_layout()
+            fig_results, axes_results = plt.subplots(1, num)
+            fig_results.suptitle(f"{num} incorrect predictions from testing data")
+            fig_results.set_size_inches(14,4)
+            fig_results.tight_layout()
 
             # If there is only 1 axis
             if num == 1:
                 # Turn it into a list
-                axes_list = [axes2]
+                axes_list = [axes_results]
             # If there are more than 1 axes
             else:
                 # Use the pregenerated list
-                axes_list = axes2
+                axes_list = axes_results
 
             # Iterate over each axis and index
             for ax, idx in zip(axes_list, rand_indices):
