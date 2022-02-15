@@ -244,6 +244,8 @@ def main():
         # Validate init flag
         if argv[1] == 'init':
             print("Initializing data file\n")
+            # Set state to init
+            state = 'init'
             # Create path to data directories
             data_path = os.path.join("data")
             # Subdirectories of data to include
@@ -255,7 +257,10 @@ def main():
                 os.remove(f'{base_name}_{width}x{width}px.pkl')
             # Make new .pkl file with the data path, filename, resize width and included subdirectories
             resize_all(src=data_path, pklname=base_name, width=width, include=include)
-            state = 'init'
+            # If there is a fully trained model
+            if os.path.isfile(full_train_model):
+                # Remove the fully trained model since there are new photos to train
+                os.remove(full_train_model)
         # If load flag is given
         elif argv[1] == 'load':
             # Enable loading sgd file instead of training new model
