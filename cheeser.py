@@ -12,7 +12,6 @@ from sklearn.model_selection import cross_val_predict, GridSearchCV
 from sklearn.preprocessing import StandardScaler, Normalizer
 from sklearn.metrics import confusion_matrix
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import AdaBoostRegressor
 from sklearn import svm
 from collections import Counter
 from random import randint
