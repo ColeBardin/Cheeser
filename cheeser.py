@@ -81,16 +81,6 @@ def resize_indir(src, width=150, height=None):
 
 # Method to resize all of the images and save a .pkl file of the data
 def resize_all(src, pklname, include, width=150, height=None):
-    # Parameters:
-    # src: str
-        # path to data
-    # pklname: str
-        # path to output file
-    # width: int
-        # target width of the image in pixels
-    # include: set[str]
-        # set containing str
-
     # If specified height is given, use that else use the default width     
     height = height if height is not None else width
     # Create empty dictionary
